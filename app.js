@@ -20,7 +20,8 @@ var express = require("express"),
   hbs = require("hbs"),
   restler = require("restler"),
   forceSSL = require("express-force-ssl"),
-  async = require("async");
+  async = require("async"),
+  metric = require('./metric');
 
 
 dotenv.load();
@@ -587,6 +588,8 @@ function track(req, res) {
   else {
     event.bound_vcap_services = {};
   }
+
+  metric.sentAnalytic(event);
 
   var eventsDb = deploymentTrackerDb.use("events");
   eventsDb.insert(event, function (err) {
