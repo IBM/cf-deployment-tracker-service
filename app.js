@@ -529,7 +529,7 @@ function track(req, res) {
     //       missing: ["missing_property_name"]
     //      }
     var missing = _.filter(["application_id", "application_name", 
-                            "repository_url", "runtime", "space_id"],
+                            "repository_url", "runtime", "space_id","config"],
                            function(property) {
                             return (! (req.body[property]));
                           });
@@ -540,6 +540,8 @@ function track(req, res) {
       return res.status(200).json({ok: true});
     }    
   }
+
+  console.log(req.body);
 
   var event = {
     date_received: new Date().toJSON()
@@ -589,7 +591,7 @@ function track(req, res) {
     event.bound_vcap_services = {};
   }
 
-  metric.sentAnalytic(event);
+  event = metric.sentAnalytic(event,req.body.config);
 
   var eventsDb = deploymentTrackerDb.use("events");
   eventsDb.insert(event, function (err) {
