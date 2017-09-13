@@ -20,6 +20,7 @@ function massage(data,config){
 	if(config.target_services) newData.target_services = config.target_services; else newData.target_services = "";
 	if(config.event_id) newData.event_id = config.event_id; else newData.event_id = "";
 	if(config.deploy_to_bluemix) newData.deploy_to_bluemix = config.deploy_to_bluemix; else newData.deploy_to_bluemix = "";
+	if(data.date_sent) newData.date_deployed = data.date_sent; else newData.date_deployed = "";
 	}catch(ex){
 		console.log("repository.config is not parsed or causing error");
 	}

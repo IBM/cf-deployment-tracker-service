@@ -224,7 +224,7 @@ app.get("/", forceSslIfNotLocal, function(req, res) {
 });
 
 // Get metrics overview
-app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
+app.get("/stats", forceSslIfNotLocal, function(req, res) {
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
   if (!deploymentTrackerDb) {
@@ -339,7 +339,7 @@ app.get("/repos", [forceSslIfNotLocal, checkAPIKey()], function(req, res) {
 });
 
 // Get metrics for a specific repo
-app.get("/stats/:hash", [forceSslIfNotLocal, authenticate()], function(req, res) {
+app.get("/stats/:hash", forceSslIfNotLocal, function(req, res) {
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
   var appsSortedByCount = [];
@@ -589,8 +589,8 @@ function track(req, res) {
     event.bound_vcap_services = {};
   }
 
-  //Sent data to Segment and reformat the data.
-  event = metric.sentAnalytic(event,req.body.config);
+  //Sent data to Segment
+  metric.sentAnalytic(event,req.body.config);
 
   var eventsDb = deploymentTrackerDb.use("events");
   eventsDb.insert(event, function (err) {
