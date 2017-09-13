@@ -541,8 +541,6 @@ function track(req, res) {
     }    
   }
 
-  console.log(req.body);
-
   var event = {
     date_received: new Date().toJSON()
   };
@@ -591,6 +589,7 @@ function track(req, res) {
     event.bound_vcap_services = {};
   }
 
+  //Sent data to Segment and reformat the data.
   event = metric.sentAnalytic(event,req.body.config);
 
   var eventsDb = deploymentTrackerDb.use("events");
