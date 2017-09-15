@@ -541,6 +541,7 @@ function track(req, res) {
     }    
   }
 
+
   var event = {
     date_received: new Date().toJSON()
   };
@@ -589,8 +590,10 @@ function track(req, res) {
     event.bound_vcap_services = {};
   }
 
+  var provider = '';
+  if(req.body.provider) provider = req.body.provider;
   //Sent data to Segment
-  metric.sentAnalytic(event,req.body.config);
+  metric.sentAnalytic(event,req.body.config, provider);
 
   var eventsDb = deploymentTrackerDb.use("events");
   eventsDb.insert(event, function (err) {

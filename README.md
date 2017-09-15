@@ -6,7 +6,7 @@ Metrics Collector Service tracks deployments of sample workloads to IBM Cloud an
 
 > To enable tracking for your sample applications, follow [these instructions]()
 
-[**_View a summary of deployments tracked._**](https://deployment-tracker.mybluemix.net/)
+[**_View a summary of deployments tracked._**](https://trackermetric.mybluemix.net/)
 
 ## Cloning
 
@@ -90,7 +90,7 @@ Failure response (HTTP code 400):
 
 ## Privacy Notice
 
-This web application includes code to track deployments to [IBM Bluemix](https://www.bluemix.net/) and other Cloud Foundry platforms. The following information is sent to a [Deployment Tracker](https://github.com/cloudant-labs/deployment-tracker) service on each deployment:
+This web application includes code to track deployments to [IBM Bluemix](https://www.bluemix.net/) and other Cloud Foundry platforms. The following information is sent to a [Deployment Tracker](https://github.com/IBM/metrics-collector-service) service on each deployment:
 
 * Application Name (`application_name`)
 * Application GUID (`application_id`)
