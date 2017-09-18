@@ -17,7 +17,6 @@ function massage(data,config,provider){
 		target_runtimes : '',
 		target_services : '',
 		event_id : '',
-		deploy_to_bluemix : '',
 		date_deployed : '',
 		event_organizer: ''
 	};
@@ -28,7 +27,6 @@ function massage(data,config,provider){
 			if(config.target_runtimes) newData.target_runtimes = config.target_runtimes;
 			if(config.target_services) newData.target_services = config.target_services;
 			if(config.event_id) newData.event_id = config.event_id;
-			if(config.deploy_to_bluemix) newData.deploy_to_bluemix = config.deploy_to_bluemix;
 			if(config.event_organizer) newData.event_organizer = config.event_organizer;
 			if(provider) newData.provider = provider;
 		}
