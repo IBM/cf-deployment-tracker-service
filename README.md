@@ -6,7 +6,7 @@ Metrics Collector Service tracks deployments of sample workloads to IBM Cloud an
 
 > To enable tracking for your sample applications, follow [these instructions]()
 
-[**_View a summary of deployments tracked._**](https://trackermetric.mybluemix.net/)
+[**_View a summary of deployments tracked._**](https://metrics-tracker.mybluemix.net/)
 
 ## Cloning
 
