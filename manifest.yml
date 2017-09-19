@@ -8,7 +8,7 @@ declared-services:
     plan: 30mb
 applications:
 - name: deployment-tracker
-  host: metricstracker
+  host: metrics-collectors
   memory: 256M
   instances: 3
   random-route: true
