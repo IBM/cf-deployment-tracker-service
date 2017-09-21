@@ -1,7 +1,6 @@
 var Analytics = require('analytics-node');
 var analytics = new Analytics(process.env.WRITE_KEY);
 
-
 module.exports = {
 	sentAnalytic: function(data,config,provider){
 		var newData = massage(data,config,provider);

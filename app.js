@@ -21,6 +21,7 @@ var express = require("express"),
   restler = require("restler"),
   forceSSL = require("express-force-ssl"),
   async = require("async"),
+  SimpleDataVis = require('simple-data-vis'),
   metric = require('./metric');
 
 
@@ -285,13 +286,23 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
         }
         return 0;
       }).reverse();
-      res.render("stats", {apps: appsSortedByCount});
+      var data = [];
+      for(var i = 0; i < 5; i++){
+        var link = appsSortedByCount[i].url;
+        var re = /http(s)?:\/\/github\.com\//;
+        var urlSuffix = link.split(re);
+        var key = urlSuffix[urlSuffix.length - 1];
+        var item = {"key": key, "value" : appsSortedByCount[i].count};
+        data.push(item);
+      }
+      var output = JSON.stringify(data);
+      res.render("stats", {data: output, apps: appsSortedByCount});
     });
   });
 });
 
 // Get CSV of metrics overview
-app.get("/stats.csv", [forceSslIfNotLocal, authenticate()], function(req, res) {
+app.get("/stats.csv", forceSslIfNotLocal, function(req, res) {
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
   if (!deploymentTrackerDb) {
@@ -314,7 +325,7 @@ app.get("/stats.csv", [forceSslIfNotLocal, authenticate()], function(req, res) {
 });
 
 // Get JSON of metrics overview
-app.get("/repos", [forceSslIfNotLocal, checkAPIKey()], function(req, res) {
+app.get("/repos", forceSslIfNotLocal, function(req, res) {
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
 
@@ -594,6 +605,8 @@ function track(req, res) {
   if(req.body.provider) provider = req.body.provider;
   //Sent data to Segment
   metric.sentAnalytic(event,req.body.config, provider);
+  if(req.body.config) event.config = req.body.config;
+  if(provider) event.provider = provider;
 
   var eventsDb = deploymentTrackerDb.use("events");
   eventsDb.insert(event, function (err) {
