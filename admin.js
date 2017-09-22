@@ -105,6 +105,16 @@ program
                 "doc.application_version]); } } }",
               reduce: "_count",
             },
+            by_services: {
+              map: "function(doc) { if (doc.config.target_services && doc.config.target_services !== []) { "+ 
+                "for(var i = 0; i<doc.config.target_services.length;i++){ emit(doc.config.target_services[i]); } } }",
+              reduce: "_count",
+            },
+            by_runtimes: {
+              map: "function(doc) { if (doc.config.target_runtimes && doc.config.target_runtimes !== []) { "+ 
+                "for(var i = 0; i<doc.config.target_runtimes.length;i++){ emit(doc.config.target_runtimes[i]); } } }",
+              reduce: "_count",
+            },
             by_repo_hash: {
               map: "function(doc) { " +
                 "if(! doc.hasOwnProperty('instance_index') || " +

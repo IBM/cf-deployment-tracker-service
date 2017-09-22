@@ -165,7 +165,7 @@
           .attr('x', function (d) { return xScale(d.value) + margin.left })
           .attr('y', function (d, i) { return yScale(i + 0.5) })
           .attr('opacity', 1)
-          .text(function (d) { return '(' + d.value + ')' })
+          .text(function (d) { return '(' + d.value + '%)' })
 
         // remove old value labels
         valueLabels.exit().transition()
@@ -314,7 +314,7 @@
           .attr('x', function (d) { return xScale(d.value) + margin.left })
           .attr('y', function (d, i) { return yScale(i + 0.5) })
           .attr('opacity', 1)
-          .text(function (d) { return '(' + d.value + ')' })
+          .text(function (d) { return '(' + d.value + '%)' })
 
         // remove old value labels
         valueLabels.exit().transition()

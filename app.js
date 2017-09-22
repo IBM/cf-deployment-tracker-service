@@ -221,11 +221,15 @@ function getStats(repo, callback) {
 }
 
 app.get("/", forceSslIfNotLocal, function(req, res) {
-  res.render("index");
+  computeStats(req,res,"index");
 });
 
 // Get metrics overview
 app.get("/stats", forceSslIfNotLocal, function(req, res) {
+  computeStats(req,res,"stats");
+});
+
+function computeStats(req, res, page){
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
   if (!deploymentTrackerDb) {
@@ -260,46 +264,61 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
       }
     });
 
-    //get count for each app
-    async.forEachOf(apps, function (value, key, callback) {
-      getStats(key, function(error, data) {
-        if (error) {
-          callback(error);
+    //Get service count
+    eventsDb.view("deployments", "by_services", {group_level: 1}, function(err2, body2) {
+        var services = {}
+        services = body2.rows;
+    //Get runtime count
+    eventsDb.view("deployments", "by_runtimes", {group_level: 1}, function(err3, body3) {
+        var runtimes = {}
+        runtimes = body3.rows;
+
+      //get count for each app
+      async.forEachOf(apps, function (value, key, callback) {
+        getStats(key, function(error, data) {
+          if (error) {
+            callback(error);
+          }
+          else {
+            value.githubStats = data;
+            apps[key] = value;
+            callback(null);
+          }
+        });
+      }, function() {
+        var appsSortedByCount = [];
+        var sum = 0;
+        for (var url in apps) {
+          sum+=apps[url].count;
+          appsSortedByCount.push(apps[url]);
         }
-        else {
-          value.githubStats = data;
-          apps[key] = value;
-          callback(null);
-        }
+        appsSortedByCount.sort(function(a, b) {
+          if (a.count < b.count) {
+            return -1;
+          }
+          if (a.count > b.count) {
+            return 1;
+          }
+          return 0;
+        }).reverse();
+        //Calculate top 5 repositories.
+        var data = [];
+        for(var i = 0; i < 5; i++){
+          var link = appsSortedByCount[i].url;
+          var urlSuffix = link.split('.com/');
+          var repoPrefix = urlSuffix[urlSuffix.length - 1].split('.');
+          var key = repoPrefix[0];
+          var value = Math.round((appsSortedByCount[i].count/sum)*10000)/100
+          var item = {"key": key, "value" : value};
+          data.push(item);
+        } 
+        res.render(page, {data: JSON.stringify(data), apps: appsSortedByCount, 
+          services: JSON.stringify(services), runtimes: JSON.stringify(runtimes)});
       });
-    }, function() {
-      var appsSortedByCount = [];
-      for (var url in apps) {
-        appsSortedByCount.push(apps[url]);
-      }
-      appsSortedByCount.sort(function(a, b) {
-        if (a.count < b.count) {
-          return -1;
-        }
-        if (a.count > b.count) {
-          return 1;
-        }
-        return 0;
-      }).reverse();
-      var data = [];
-      for(var i = 0; i < 5; i++){
-        var link = appsSortedByCount[i].url;
-        var re = /http(s)?:\/\/github\.com\//;
-        var urlSuffix = link.split(re);
-        var key = urlSuffix[urlSuffix.length - 1];
-        var item = {"key": key, "value" : appsSortedByCount[i].count};
-        data.push(item);
-      }
-      var output = JSON.stringify(data);
-      res.render("stats", {data: output, apps: appsSortedByCount});
     });
-  });
-});
+   });
+ });
+}
 
 // Get CSV of metrics overview
 app.get("/stats.csv", forceSslIfNotLocal, function(req, res) {
@@ -566,6 +585,10 @@ function track(req, res) {
     event.repository_url = req.body.repository_url;
     event.repository_url_hash = crypto.createHash("md5").update(event.repository_url).digest("hex");
   }
+  if(req.body.config) {
+    if(req.body.config.repository_id) event.repository_url = "https://github.com/IBM/" +  req.body.config.repository_id;
+    event.repository_url_hash = crypto.createHash("md5").update(event.repository_url).digest("hex");
+  }
   if (req.body.application_name) {
     event.application_name = req.body.application_name;
   }
@@ -603,9 +626,9 @@ function track(req, res) {
 
   var provider = '';
   if(req.body.provider) provider = req.body.provider;
+  if(req.body.config) event.config = req.body.config;
   //Sent data to Segment
   metric.sentAnalytic(event,req.body.config, provider);
-  if(req.body.config) event.config = req.body.config;
   if(provider) event.provider = provider;
 
   var eventsDb = deploymentTrackerDb.use("events");

@@ -19,7 +19,7 @@ function massage(data,config,provider){
 		date_deployed : '',
 		event_organizer: ''
 	};
-	newData.cfMetric = data;
+	newData.cfMetric = JSON.parse(JSON.stringify(data));
 	try{
 		if(config){
 			if(config.repository_id) newData.repository_id = config.repository_id;
@@ -28,6 +28,7 @@ function massage(data,config,provider){
 			if(config.event_id) newData.event_id = config.event_id;
 			if(config.event_organizer) newData.event_organizer = config.event_organizer;
 			if(provider) newData.provider = provider;
+			if(newData.cfMetric.config) delete newData.cfMetric.config;
 		}
 		if(data.date_sent) newData.date_deployed = data.date_sent;
 	}catch(ex){

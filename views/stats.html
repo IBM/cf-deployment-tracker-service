@@ -27,13 +27,34 @@
     }
 
      var data = JSON.parse(htmlDecode("{{data}}"));
+     var services = JSON.parse(htmlDecode("{{services}}"));
+     var runtimes = JSON.parse(htmlDecode("{{runtimes}}"));
+     console.log(services);
+     console.log(runtimes);
      window.addEventListener('DOMContentLoaded', function () {
+       //Number of deployment
        SimpleDataVis(data)
          .attr('type', 'bar-chart')
          .attr('tooltip', function (d) {
-           return d.key + ': ' + d.value
+           return d.key + ': ' + d.value + "%"
          })
          .render('#datavischart')
+       //services
+       SimpleDataVis(services)
+         .attr('type', 'pie-chart')
+         .attr('donut', true)
+         .attr('tooltip', function (d) {
+           return d.key + ': ' + d.value 
+         })
+         .render('#datavisservice')
+      //runtimes 
+      SimpleDataVis(runtimes)
+         .attr('type', 'pie-chart')
+         .attr('donut', true)
+         .attr('tooltip', function (d) {
+           return d.key + ': ' + d.value 
+         })
+         .render('#datavisruntime')
      })
   </script>
   </head>
@@ -45,11 +66,28 @@
 <!--         <p><a class="btn btn-primary btn-lg" href="https://github.com/IBM-Bluemix/cf-deployment-tracker-service" target="_blank" role="button">View the source code on GitHub <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></p> -->
       </div>
     </div>
+  <div>
     <figure class="guide-example theme_light bg_light-tint">
         <p class="type_copy type_mark" style="font-size: 30px">
-          Top 5 Journeys</p>
+          Top 5 Repositories</p>
         <div id="datavischart"></div>
     </figure>
+  </div>
+  <div class="col-xs-6 col-md-6 col-lg-6">
+  <figure class="guide-example theme_light bg_light-tint">
+        <p class="type_copy type_mark" style="font-size: 30px">
+          Services</p>
+          <div id="datavisservice"></div>
+  </figure>
+ </div>
+ <div class="col-xs-6 col-md-6 col-lg-6">
+  <figure class="guide-example theme_light bg_light-tint">
+        <p class="type_copy type_mark" style="font-size: 30px">
+          Runtimes</p>
+          <div id="datavisruntime"></div>
+  </figure>
+ </div>
+ <p class="container"></p>
     <article class="container">
       <ol class="breadcrumb">
         <li class="active">Stats</li>

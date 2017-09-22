@@ -44,7 +44,7 @@
         var padding = 5
         var box = selection.node().getBoundingClientRect()
         var width = (box.width || 1024)
-        var height = (box.height || 600)
+        var height = (box.height || 300)
         // var width = Math.max(400, box.width)
         // var height = Math.max(400, (20 * data.length))
         var outerRadius = Math.min(height, width) / 2 - 20
@@ -89,13 +89,13 @@
           .style('color', '#264a60')
           .style('fill', '#264a60')
           .style('font-family', 'HelvNeue,Helvetica,sans-serif')
-          .style('font-size', '0.8rem')
+          .style('font-size', '1.5rem')
           .style('font-weight', '300')
 
         // pie chart graphic
         var graph = svg.selectAll('g').data([data])
         graph.enter().append('g')
-        graph.attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+        graph.attr('transform', 'translate(' + width / 1.4 + ',' + height / 2 + ')')
 
         // pie chart arcs
         var arcs = graph.selectAll('path').data(pie)
@@ -203,7 +203,7 @@
         var padding = 5
         var box = selection.node().getBoundingClientRect()
         var width = (box.width || 1024)
-        var height = (box.height || 600)
+        var height = (box.height || 300)
         var outerRadius = Math.min(height, width) / 2 - 20
         var innerRadius = opts.donut ? outerRadius / 3 : 1
 
@@ -244,7 +244,7 @@
             .style('color', '#264a60')
             .style('fill', '#264a60')
             .style('font-family', 'HelvNeue,Helvetica,sans-serif')
-            .style('font-size', '0.8rem')
+            .style('font-size', '1.5rem')
             .style('font-weight', '300')
           .merge(svg)
             .attr('width', width)
@@ -253,7 +253,7 @@
         // pie chart graphic
         var graph = svg.selectAll('g').data([data])
         graph = graph.enter().append('g')
-            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+            .attr('transform', 'translate(' + width / 1.4 + ',' + height / 2 + ')')
           .merge(graph)
 
         // pie chart arcs
