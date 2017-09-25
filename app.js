@@ -221,57 +221,24 @@ function getStats(repo, callback) {
 }
 
 app.get("/", forceSslIfNotLocal, function(req, res) {
-  computeStats(req,res,"index");
-});
-
-// Get metrics overview
-app.get("/stats", forceSslIfNotLocal, function(req, res) {
-  computeStats(req,res,"stats");
-});
-
-function computeStats(req, res, page){
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
   if (!deploymentTrackerDb) {
     return res.status(500);
   }
   var eventsDb = deploymentTrackerDb.use("events");
-  eventsDb.view("deployments", "by_repo", {group_level: 3}, function(err, body) {
+  eventsDb.view("deployments", "by_repo", {group_level: 1}, function(err, body) {
     var apps = {};
     body.rows.map(function(row) {
       var url = row.key[0];
-      var year = row.key[1];
-      var month = row.key[2];
+      var count = row.value;
       if (!(url in apps)) {
         apps[url] = {
           url: url,
-          count: 0,
-          deploys: []
+          count: count,
         };
-        if (url) {
-          apps[url].url_hash = crypto.createHash("md5").update(url).digest("hex");
-        }
-      }
-      if (validator.isURL(url, {protocols: ["http","https"], require_protocol: true})) {
-        apps[url].is_url = true;
-      }
-      if (!(year in apps[url].deploys)) {
-        apps[url].deploys[year] = {};
-      }
-      if (!(month in apps[url].deploys[year])) {
-        apps[url].deploys[year][month] = row.value;
-        apps[url].count += row.value;
       }
     });
-
-    //Get service count
-    eventsDb.view("deployments", "by_services", {group_level: 1}, function(err2, body2) {
-        var services = {}
-        services = body2.rows;
-    //Get runtime count
-    eventsDb.view("deployments", "by_runtimes", {group_level: 1}, function(err3, body3) {
-        var runtimes = {}
-        runtimes = body3.rows;
 
       //get count for each app
       async.forEachOf(apps, function (value, key, callback) {
@@ -312,13 +279,114 @@ function computeStats(req, res, page){
           var item = {"key": key, "value" : value};
           data.push(item);
         } 
-        res.render(page, {data: JSON.stringify(data), apps: appsSortedByCount, 
+        res.render("index", {data: JSON.stringify(data)});
+      });
+    });
+   });
+
+// Get metrics overview
+app.get("/stats", forceSslIfNotLocal, function(req, res) {
+  var app = req.app;
+  var deploymentTrackerDb = app.get("deployment-tracker-db");
+  if (!deploymentTrackerDb) {
+    return res.status(500);
+  }
+  var eventsDb = deploymentTrackerDb.use("events");
+  eventsDb.view("deployments", "by_repo", {group_level: 3}, function(err, body) {
+    var apps = {};
+    body.rows.map(function(row) {
+      var url = row.key[0];
+      var year = row.key[1];
+      var month = row.key[2];
+      if (!(url in apps)) {
+        apps[url] = {
+          url: url,
+          count: 0,
+          deploys: []
+        };
+        if (url) {
+          apps[url].url_hash = crypto.createHash("md5").update(url).digest("hex");
+        }
+      }
+      if (validator.isURL(url, {protocols: ["http","https"], require_protocol: true})) {
+        apps[url].is_url = true;
+      }
+      if (!(year in apps[url].deploys)) {
+        apps[url].deploys[year] = {};
+      }
+      if (!(month in apps[url].deploys[year])) {
+        apps[url].deploys[year][month] = row.value;
+        apps[url].count += row.value;
+      }
+    });
+
+    //Get service and runtime count
+    eventsDb.view("deployments", "by_runtime_service", {group_level: 2}, function(err2, body2) {
+        var runtimes = [];
+        var services = [];
+        body2.rows.map(function(row) {
+          var item = row.key[0];
+          var identifier = row.key[1];
+          var count = row.value;
+          if(identifier=="runtimes"){
+            var runtime = {
+              key: item,
+              value: count
+            };
+            runtimes.push(runtime);
+          }else if(identifier=="services"){
+            var service = {
+              key: item,
+              value: count
+            };
+            services.push(service); 
+          }
+        });
+      //get count for each app
+      async.forEachOf(apps, function (value, key, callback) {
+        getStats(key, function(error, data) {
+          if (error) {
+            callback(error);
+          }
+          else {
+            value.githubStats = data;
+            apps[key] = value;
+            callback(null);
+          }
+        });
+      }, function() {
+        var appsSortedByCount = [];
+        var sum = 0;
+        for (var url in apps) {
+          sum+=apps[url].count;
+          appsSortedByCount.push(apps[url]);
+        }
+        appsSortedByCount.sort(function(a, b) {
+          if (a.count < b.count) {
+            return -1;
+          }
+          if (a.count > b.count) {
+            return 1;
+          }
+          return 0;
+        }).reverse();
+        //Calculate top 5 repositories.
+        var data = [];
+        for(var i = 0; i < 5; i++){
+          var link = appsSortedByCount[i].url;
+          var urlSuffix = link.split('.com/');
+          var repoPrefix = urlSuffix[urlSuffix.length - 1].split('.');
+          var key = repoPrefix[0];
+          var value = Math.round((appsSortedByCount[i].count/sum)*10000)/100
+          var item = {"key": key, "value" : value};
+          data.push(item);
+        } 
+        res.render("stats", {data: JSON.stringify(data), apps: appsSortedByCount, 
           services: JSON.stringify(services), runtimes: JSON.stringify(runtimes)});
       });
     });
    });
  });
-}
 
 // Get CSV of metrics overview
 app.get("/stats.csv", forceSslIfNotLocal, function(req, res) {

@@ -115,6 +115,14 @@ program
                 "for(var i = 0; i<doc.config.target_runtimes.length;i++){ emit(doc.config.target_runtimes[i]); } } }",
               reduce: "_count",
             },
+            by_runtime_service: {
+              map: "function(doc) { if (doc.config.target_services && doc.config.target_services !== []) { "+
+              "for (var i = 0; i < doc.config.target_services.length; i++) { emit([doc.config.target_services[i],'services']);"+
+              " } } if (doc.config.target_runtimes && doc.config.target_runtimes !== []) {"+
+              "for (var j = 0; j < doc.config.target_runtimes.length; j++) { emit([doc.config.target_runtimes[j],'runtimes']);"+
+              " } } }",
+              reduce: "_count",
+            },
             by_repo_hash: {
               map: "function(doc) { " +
                 "if(! doc.hasOwnProperty('instance_index') || " +
