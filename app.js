@@ -586,8 +586,12 @@ function track(req, res) {
     event.repository_url_hash = crypto.createHash("md5").update(event.repository_url).digest("hex");
   }
   if(req.body.config) {
-    if(req.body.config.repository_id) event.repository_url = "https://github.com/IBM/" +  req.body.config.repository_id;
-    event.repository_url_hash = crypto.createHash("md5").update(event.repository_url).digest("hex");
+    try{
+      if(req.body.config.repository_id) event.repository_url = "https://github.com/IBM/" +  req.body.config.repository_id;
+      event.repository_url_hash = crypto.createHash("md5").update(event.repository_url).digest("hex");
+    }catch(ex){
+      console.log("Post request error: wrong format in repository.yaml");
+    }
   }
   if (req.body.application_name) {
     event.application_name = req.body.application_name;

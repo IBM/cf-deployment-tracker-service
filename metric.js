@@ -32,7 +32,7 @@ function massage(data,config,provider){
 		}
 		if(data.date_sent) newData.date_deployed = data.date_sent;
 	}catch(ex){
-		console.log("repository.config is not parsed or causing error");
+		console.log("repository.yaml is not parsed or causing error");
 	}
 	return newData;
 }
