@@ -55,6 +55,7 @@
     "passport": "0.3.2",
     "passport-idaas-openidconnect": "1.0.0",
     "restler": "3.4.0",
+    "simple-data-vis": "^0.3.0",
     "underscore": "1.8.3",
     "validator": "5.1.0"
   },

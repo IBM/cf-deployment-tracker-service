@@ -1,7 +1,6 @@
 var Analytics = require('analytics-node');
 var analytics = new Analytics(process.env.WRITE_KEY);
 
-
 module.exports = {
 	sentAnalytic: function(data,config,provider){
 		var newData = massage(data,config,provider);
@@ -20,7 +19,7 @@ function massage(data,config,provider){
 		date_deployed : '',
 		event_organizer: ''
 	};
-	newData.cfMetric = data;
+	newData.cfMetric = JSON.parse(JSON.stringify(data));
 	try{
 		if(config){
 			if(config.repository_id) newData.repository_id = config.repository_id;
@@ -29,17 +28,18 @@ function massage(data,config,provider){
 			if(config.event_id) newData.event_id = config.event_id;
 			if(config.event_organizer) newData.event_organizer = config.event_organizer;
 			if(provider) newData.provider = provider;
+			if(newData.cfMetric.config) delete newData.cfMetric.config;
 		}
 		if(data.date_sent) newData.date_deployed = data.date_sent;
 	}catch(ex){
-		console.log("repository.config is not parsed or causing error");
+		console.log("repository.yaml is not parsed or causing error");
 	}
 	return newData;
 }
 
 //Sent data to Segment
 function sentData(data){
-  var id = 'Unknown';
+  var id = 'unknown';
   if(data.cfMetric.space_id) id = data.cfMetric.space_id;
   analytics.track({
     userId: id,
