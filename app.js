@@ -324,6 +324,7 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
     eventsDb.view("deployments", "by_runtime_service", {group_level: 2}, function(err2, body2) {
         var runtimes = [];
         var services = [];
+        var serviceCount = 0;
         body2.rows.map(function(row) {
           var item = row.key[0];
           var identifier = row.key[1];
@@ -339,9 +340,32 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
               key: item,
               value: count
             };
+            serviceCount+=count;
             services.push(service); 
           }
         });
+        //List the top 9 services, and set the rest of the counts to "others"
+        services.sort(function(a, b) {
+          if (a.value < b.value) {
+            return -1;
+          }
+          if (a.value > b.value) {
+            return 1;
+          }
+          return 0;
+        }).reverse();
+        var top9Count = 0;
+        var temp = [];
+        for(var i = 0; i < 9; i++){
+          top9Count+= services[i].value;
+          temp.push(services[i]);
+        }
+        var others = {
+              key: "Others",
+              value: serviceCount - top9Count
+            };
+        temp.push(others);
+        services = temp;
       //get count for each app
       async.forEachOf(apps, function (value, key, callback) {
         getStats(key, function(error, data) {

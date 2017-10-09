@@ -39,7 +39,7 @@ function massage(data,config,provider){
 
 //Sent data to Segment
 function sentData(data){
-  var id = 'unknown';
+  var id = 'unknownID';
   if(data.cfMetric.space_id) id = data.cfMetric.space_id;
   analytics.track({
     userId: id,
