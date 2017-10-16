@@ -1,6 +1,6 @@
 # Metrics Collector Service
 
-Metrics Collector Service tracks deployments of sample workloads to IBM Cloud and Watson runtimes based on Cloud Foundry, Kubernetes, OpenWhisk, Data Science Experience and others.
+Metrics Collector Service tracks deployments of sample workloads to IBM Cloud and Watson platform deployed on Cloud Foundry, Kubernetes, OpenWhisk, Data Science Experience and others, and the usage of associated services
 
 ![Flow](images/metrics-service.png)
 
