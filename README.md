@@ -90,7 +90,7 @@ Failure response (HTTP code 400):
 
 ## Privacy Notice
 
-This web application includes code to track deployments to [IBM Bluemix](https://www.bluemix.net/) and other Cloud Foundry platforms. The following information is sent to a [Deployment Tracker](https://github.com/IBM/metrics-collector-service) service on each deployment:
+This web application includes code to track deployments to [IBM Bluemix](https://www.bluemix.net/) runtimes and services. The following information is sent to a [Metrics Tracker](https://github.com/IBM/metrics-collector-service) service on each deployment:
 
 * Application Name (`application_name`)
 * Application GUID (`application_id`)
@@ -101,7 +101,7 @@ This web application includes code to track deployments to [IBM Bluemix](https:/
 * Labels of bound services
 * Number of instances for each bound service
 
-This data is collected from the `VCAP_APPLICATION` and `VCAP_SERVICES` environment variables in IBM Bluemix and other Cloud Foundry platforms. This data is used by IBM to track metrics around deployments of sample applications to IBM Bluemix to measure the usefulness of our examples, so that we can continuously improve the content we offer to you. Only deployments of sample applications that include code to ping the Deployment Tracker service will be tracked.
+This data is collected from the `VCAP_APPLICATION` and `VCAP_SERVICES` environment variables in IBM Bluemix. This data is used by IBM to track metrics around deployments of sample applications to IBM Bluemix to measure the usefulness of our examples, so that we can continuously improve the content we offer to you. Only deployments of sample applications that include code to ping the Deployment Tracker service will be tracked.
 
 ### Disabling Deployment Tracking
 
