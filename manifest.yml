@@ -7,7 +7,7 @@ declared-services:
     label: rediscloud
     plan: 30mb
 applications:
-- name: deployment-tracker
+- name: deployment-tracker-DO-NOT-DELETE
   host: metrics-tracker
   memory: 256M
   instances: 5

@@ -29,6 +29,7 @@
      var data = JSON.parse(htmlDecode("{{data}}"));
      var services = JSON.parse(htmlDecode("{{services}}"));
      var runtimes = JSON.parse(htmlDecode("{{runtimes}}"));
+     var languages = JSON.parse(htmlDecode("{{languages}}"));
      window.addEventListener('DOMContentLoaded', function () {
        //Number of deployment
        SimpleDataVis(data)
@@ -53,6 +54,14 @@
            return d.key + ': ' + d.value 
          })
          .render('#datavisruntime')
+      //Programming Languages
+      SimpleDataVis(languages)
+         .attr('type', 'pie-chart')
+         .attr('donut', true)
+         .attr('tooltip', function (d) {
+           return d.key + ': ' + d.value 
+         })
+         .render('#datavislanguage')
      })
   </script>
   </head>
@@ -74,7 +83,7 @@
   <div class="col-xs-6 col-md-6 col-lg-6">
   <figure class="guide-example theme_light bg_light-tint">
         <p class="type_copy type_mark" style="font-size: 30px">
-          Services</p>
+          Service Usage</p>
           <div id="datavisservice"></div>
   </figure>
  </div>
@@ -85,6 +94,20 @@
           <div id="datavisruntime"></div>
   </figure>
  </div>
+  <div class="col-xs-6 col-md-6 col-lg-6">
+  <figure class="guide-example theme_light bg_light-tint">
+        <p class="type_copy type_mark" style="font-size: 30px">
+          Programming Languages</p>
+          <div id="datavislanguage"></div>
+  </figure>
+ </div>
+ <div class="col-xs-12 col-md-12 col-lg-12">
+  <article class="container">
+      <p style="text-align:center;">
+        <a class="btn btn-primary btn-lg" href="/graphs" role="button">Click here to see the usage graphs <span class="glyphicon glyphicon-lock" aria-hidden="true"></span></a>
+      </p>
+    </article>
+  </div>
  <p class="container"></p>
     <article class="container">
       <ol class="breadcrumb">

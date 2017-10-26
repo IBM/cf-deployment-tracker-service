@@ -120,7 +120,7 @@ program
               "for (var i = 0; i < doc.config.target_services.length; i++) { emit([doc.config.target_services[i],'services']);"+
               " } } if (doc.config.target_runtimes && doc.config.target_runtimes !== []) {"+
               "for (var j = 0; j < doc.config.target_runtimes.length; j++) { emit([doc.config.target_runtimes[j],'runtimes']);"+
-              " } } }",
+              " } } if (doc.runtime && doc.runtime !== '') { emit([doc.runtime, 'language']); } }",
               reduce: "_count",
             },
             by_repo_hash: {

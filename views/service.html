@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Metrics Collector</title>
+    <link rel="stylesheet" href="/assets/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/bootstrap/dist/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/demo.css">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="/js/simpledatavis.js"></script>
+    <script type="text/javascript" src="/js/vis/simpledatavis-barchart.js"></script>
+    <script type="text/javascript" src="/js/vis/simpledatavis-piechart.js"></script>
+    <script type="text/javascript" src="/js/vis/simpledatavis-timeline.js"></script>
+    <script type="text/javascript" src="/js/vis/simpledatavis-stackedbarchart.js"></script>
+    <script type="text/javascript" src="/js/vis/simpledatavis-groupedbarchart.js"></script>
+    <style>
+      .copy {
+        cursor: pointer;
+      }
+    </style>
+    <!--[if lt IE 9]>
+      <script src="/assets/html5shiv/dist/html5shiv.min.js"></script>
+      <script src="/assets/respond/dest/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Metrics Collector</h1>
+        <p>Deployments of sample applications to CloudFoundry, Kubernetes, Serverless etc.</p>
+<!--         <p><a class="btn btn-primary btn-lg" href="https://github.com/IBM-Bluemix/cf-deployment-tracker-service" target="_blank" role="button">View the source code on GitHub <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></p> -->
+    <article>
+      <ol class="breadcrumb">
+          <li><a href="/stats">Stats</a></li>
+          <li><a href="/graphs">Graphs</a></li>
+          <li class="active">Service</li>
+        </ol>
+    </article>
+      </div>
+    </div>     
+    <figure class="guide-example theme_light bg_light-tint">
+        <p class="type_mark" style="font-size: 30px">
+          Estimated {{service}} usage by Unit from Journey users.</p>
+    </figure>
+    {{#each dataRaw}}
+    <div class="col-xs-6 col-md-6 col-lg-6">
+      <figure class="guide-example theme_light bg_light-tint">
+          <p class="type_mark" style="font-size: 25px; color: gray; font-weight: bold;">
+            {{key}}</p>
+          <div id="{{key}}"></div>
+      </figure>
+    </div>
+    {{/each}}
+    <script src="/assets/jquery/dist/jquery.min.js"></script>
+    <script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/assets/zeroclipboard/dist/ZeroClipboard.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        var client = new ZeroClipboard($(".copy span"));
+        client.on('aftercopy', function (event) {
+          $(event.target.parentNode).attr("title", "Copied!").tooltip("fixTitle").tooltip("show");
+        });
+        $("[data-toggle='tooltip']").tooltip();
+      });
+
+    function htmlDecode(input){
+      var e = document.createElement('div');
+      e.innerHTML = input;
+      return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+    }
+    //graphs
+     var dataU = JSON.parse(htmlDecode("{{dataU}}"));
+     Object.keys(dataU).map(function(key){
+        window.addEventListener('DOMContentLoaded', function () {
+         SimpleDataVis(dataU[key])
+           .attr('type', 'grouped-bar-chart')
+           .attr('tooltip', function (d) {
+           return d.key + ': ' + d.value 
+            })
+           .render('#' + key)
+       })
+     });
+    </script>
+  </body>
+</html>

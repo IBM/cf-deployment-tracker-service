@@ -21,7 +21,6 @@ var express = require("express"),
   restler = require("restler"),
   forceSSL = require("express-force-ssl"),
   async = require("async"),
-  SimpleDataVis = require('simple-data-vis'),
   metric = require('./metric');
 
 
@@ -220,6 +219,58 @@ function getStats(repo, callback) {
   }
 }
 
+app.get("/graphs", forceSslIfNotLocal, function(req, res) {
+    var app = req.app;
+    var deploymentTrackerDb = app.get("deployment-tracker-db");
+    var eventsDb = deploymentTrackerDb.use("usagedata");
+    eventsDb.get('services-dev',function (err, body) {
+      if(!err){
+        try{
+          var output = body['services'];
+          var usage = body['usage'];
+          var users = body['users'];
+          usage.forEach(function(service){
+            service["key2"] = service.key.replace(/\s+/g, '');
+          });
+          res.render("graphs", {dataW: JSON.stringify(output),
+                                dataRaw: usage, users: JSON.stringify(users)});
+        }catch(ex){
+        }
+      }
+    });
+  });
+
+app.get("/graphs/:hash", forceSslIfNotLocal, function(req, res) {
+    var app = req.app;
+    var hash = req.params.hash;
+    var serviceTitle = '';
+    var deploymentTrackerDb = app.get("deployment-tracker-db");
+    var eventsDb = deploymentTrackerDb.use("usagedata");
+    var usagePerUnit = [];
+    var perUnit = [];
+    eventsDb.get('services-dev',function (err, body) {
+      if(!err){
+        try{
+          var output = body['services'];
+          var usageperservice = body['usagePerService'];
+          usageperservice.forEach(function(service){
+            service["key2"] = service.key.replace(/\s+/g, '');
+            if(hash == service.key.replace(/\s+/g, '')){
+              serviceTitle = String(service.key);
+              usagePerUnit = service.value;
+              perUnit = Object.keys(usagePerUnit).map(function(key) {
+                return {key: key, value: usagePerUnit[key]};
+              });
+            }
+          });
+          res.render("service", {dataU: JSON.stringify(usagePerUnit),
+                                dataRaw: perUnit, service: serviceTitle});
+        }catch(ex){
+        }
+      }
+    });
+  });
+
 app.get("/", forceSslIfNotLocal, function(req, res) {
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
@@ -322,8 +373,18 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
 
     //Get service and runtime count
     eventsDb.view("deployments", "by_runtime_service", {group_level: 2}, function(err2, body2) {
+      var usagedataDb = deploymentTrackerDb.use("usagedata");
+      var output = [];
+      usagedataDb.get('services-dev',function (err, body) {
+      if(!err){
+        try{
+          output = body['usage'];
+        }catch(ex){
+        }
+      }
         var runtimes = [];
         var services = [];
+        var languages = [];
         var serviceCount = 0;
         body2.rows.map(function(row) {
           var item = row.key[0];
@@ -342,30 +403,18 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
             };
             serviceCount+=count;
             services.push(service); 
+          }else if(identifier=="language"){
+            var language = {
+              key: item,
+              value: count
+            };
+            languages.push(language);
           }
         });
         //List the top 9 services, and set the rest of the counts to "others"
-        services.sort(function(a, b) {
-          if (a.value < b.value) {
-            return -1;
-          }
-          if (a.value > b.value) {
-            return 1;
-          }
-          return 0;
-        }).reverse();
-        var top9Count = 0;
-        var temp = [];
-        for(var i = 0; i < 9; i++){
-          top9Count+= services[i].value;
-          temp.push(services[i]);
+        if(services.length > 9){
+          services = metric.listTop9Services(services,serviceCount);
         }
-        var others = {
-              key: "Others",
-              value: serviceCount - top9Count
-            };
-        temp.push(others);
-        services = temp;
       //get count for each app
       async.forEachOf(apps, function (value, key, callback) {
         getStats(key, function(error, data) {
@@ -404,13 +453,20 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
           var value = Math.round((appsSortedByCount[i].count/sum)*10000)/100
           var item = {"key": key, "value" : value};
           data.push(item);
-        } 
+        }
+
+        //use warehouse data if available
+        if (typeof output !== 'undefined' && output.length > 0){
+          services = output;
+        }
         res.render("stats", {data: JSON.stringify(data), apps: appsSortedByCount, 
-          services: JSON.stringify(services), runtimes: JSON.stringify(runtimes)});
+          services: JSON.stringify(services), runtimes: JSON.stringify(runtimes),
+          languages: JSON.stringify(languages)});
       });
     });
    });
  });
+});
 
 // Get CSV of metrics overview
 app.get("/stats.csv", forceSslIfNotLocal, function(req, res) {
@@ -679,8 +735,14 @@ function track(req, res) {
   }
   if(req.body.config) {
     try{
-      if(req.body.config.repository_id) event.repository_url = "https://github.com/IBM/" +  req.body.config.repository_id;
-      event.repository_url_hash = crypto.createHash("md5").update(event.repository_url).digest("hex");
+      if(req.body.config.repository_id) {
+        if(req.body.config.repository_id.includes("/")){
+          event.repository_url = req.body.config.repository_id;
+        }else{
+          event.repository_url = "https://github.com/IBM/" +  req.body.config.repository_id;
+        }
+        event.repository_url_hash = crypto.createHash("md5").update(event.repository_url).digest("hex");
+      }
     }catch(ex){
       console.log("Post request error: wrong format in repository.yaml");
     }
@@ -713,16 +775,25 @@ function track(req, res) {
   if (req.body.runtime) {
     event.runtime = req.body.runtime;
   }  
+  event.bound_services_general = [];
   if ((req.body.bound_vcap_services) && (Object.keys(req.body.bound_vcap_services).length > 0)) {
-    event.bound_vcap_services = req.body.bound_vcap_services;     
+    event.bound_vcap_services = req.body.bound_vcap_services;
+    Object.keys(req.body.bound_vcap_services).forEach(function(service_label) {
+      event.bound_services_general.push(service_label);
+    });
   }
   else {
     event.bound_vcap_services = {};
   }
-
+  event.bound_services = [];
+  if (req.body.bound_services){
+    event.bound_services = req.body.bound_services;
+  }
   var provider = '';
   if(req.body.provider) provider = req.body.provider;
   if(req.body.config) event.config = req.body.config;
+  if(req.body.bot_name) event.chatbot_name = req.body.bot_name.replace(/[^A-Za-z\s!?]/g,'');
+  if(req.body.service_id) event.service_id = req.body.service_id;
   //Sent data to Segment
   metric.sentAnalytic(event,req.body.config, provider);
   if(provider) event.provider = provider;

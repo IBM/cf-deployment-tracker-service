@@ -58,7 +58,7 @@
         }
 
         var color = d3.scale.category10()
-        var margin = {top: 20, right: 150, bottom: 120, left: 80}
+        var margin = {top: 20, right: 260, bottom: 120, left: 80}
         var box = selection.node().getBoundingClientRect()
         var width = (box.width || 1024) - margin.left - margin.right
         var height = (box.height || 600) - margin.top - margin.bottom
@@ -105,7 +105,7 @@
           .style('color', '#264a60')
           .style('fill', '#264a60')
           .style('font-family', 'HelvNeue,Helvetica,sans-serif')
-          .style('font-size', '0.8rem')
+          .style('font-size', '1.4rem')
           .style('font-weight', '300')
         svg.exit().remove()
 
@@ -171,7 +171,7 @@
         var xaxis = graph.selectAll('g.x').data([data])
         xaxis.enter().append('g')
           .attr('class', 'x axis')
-          .style('font-size', '0.8rem')
+          .style('font-size', '1.4rem')
         var xaxistransition = typeof module === 'undefined' || !module.exports ? xaxis.transition() : xaxis
         xaxistransition
           .attr('transform', 'translate(0,' + height + ')')
@@ -186,7 +186,7 @@
         var yaxis = graph.selectAll('g.y').data([data])
         yaxis.enter().append('g')
           .attr('class', 'y axis')
-          .style('font-size', '0.8rem')
+          .style('font-size', '1.4rem')
         var yaxistransition = typeof module === 'undefined' || !module.exports ? yaxis.transition() : yaxis
         yaxistransition
           .attr('transform', 'translate(20,0)')
@@ -272,7 +272,7 @@
         }
 
         var color = d3.scaleOrdinal(d3.schemeCategory10)
-        var margin = {top: 20, right: 150, bottom: 120, left: 80}
+        var margin = {top: 20, right: 260, bottom: 120, left: 80}
         var box = selection.node().getBoundingClientRect()
         var width = (box.width || 1024) - margin.left - margin.right
         var height = (box.height || 600) - margin.top - margin.bottom
@@ -313,7 +313,7 @@
         svg = svg.enter().append('svg')
             .attr('xmlns', 'http://www.w3.org/2000/svg')
             .style('font-family', 'HelvNeue,Helvetica,sans-serif')
-            .style('font-size', '0.8rem')
+            .style('font-size', '1.4rem')
             .style('font-weight', '300')
             .attr('width', width + margin.left + margin.right)
             .attr('height', height + margin.top + margin.bottom)
@@ -347,8 +347,10 @@
         recttransition
           .attr('x', function (d) { return xScale(d.data.key) })
           .attr('width', xScale.bandwidth())
-          .attr('y', function (d) { return y(d[1]) })
-          .attr('height', function (d) { return y(d[0]) - y(d[1]) })
+          // .attr('y', function (d) { return y(d[1]) })
+          // .attr('height', function (d) { return y(d[0]) - y(d[1]) })
+          .attr('y', function (d) { if(!isNaN(y(d[1]))) return y(d[1]); })
+          .attr('height', function (d) { if(!isNaN(y(d[0]) - y(d[1]))) return y(d[0]) - y(d[1]) })
 
         if (typeof module === 'undefined' || !module.exports) {
           recttransition
@@ -376,7 +378,7 @@
         xaxis.exit().remove()
         xaxis = xaxis.enter().append('g')
             .attr('class', 'x axis')
-            .style('font-size', '0.8rem')
+            .style('font-size', '1.4rem')
           .merge(xaxis)
         var xaxistransition = typeof module === 'undefined' || !module.exports ? xaxis.transition() : xaxis
         xaxistransition
@@ -392,7 +394,7 @@
         yaxis.exit().remove()
         yaxis = yaxis.enter().append('g')
             .attr('class', 'y axis')
-            .style('font-size', '0.8rem')
+            .style('font-size', '1.4rem')
           .merge(yaxis)
         var yaxistransition = typeof module === 'undefined' || !module.exports ? yaxis.transition() : yaxis
         yaxistransition
