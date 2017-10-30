@@ -105,14 +105,11 @@ program
                 "doc.application_version]); } } }",
               reduce: "_count",
             },
-            by_services: {
-              map: "function(doc) { if (doc.config.target_services && doc.config.target_services !== []) { "+ 
-                "for(var i = 0; i<doc.config.target_services.length;i++){ emit(doc.config.target_services[i]); } } }",
-              reduce: "_count",
-            },
-            by_runtimes: {
-              map: "function(doc) { if (doc.config.target_runtimes && doc.config.target_runtimes !== []) { "+ 
-                "for(var i = 0; i<doc.config.target_runtimes.length;i++){ emit(doc.config.target_runtimes[i]); } } }",
+            by_repo_unique: {
+              map: "function(doc) { if (doc.repository_url && doc.repository_url !== '') { " +
+                "if(! doc.hasOwnProperty('instance_index') || " +
+                "(doc.hasOwnProperty('instance_index') && doc.instance_index == '0')) { " +
+                "emit([doc.repository_url, doc.date_received.substring(0, 4), doc.date_received.substring(5, 7), doc.space_id]); } } }",
               reduce: "_count",
             },
             by_runtime_service: {
@@ -123,6 +120,14 @@ program
               " } } if (doc.runtime && doc.runtime !== '') { emit([doc.runtime, 'language']); } }",
               reduce: "_count",
             },
+            by_runtime_service_unique: {
+              map: "function(doc) { if (doc.config.target_services && doc.config.target_services !== []) { "+
+              "for (var i = 0; i < doc.config.target_services.length; i++) { emit([doc.config.target_services[i],'services', doc.space_id]);"+
+              " } } if (doc.config.target_runtimes && doc.config.target_runtimes !== []) {"+
+              "for (var j = 0; j < doc.config.target_runtimes.length; j++) { emit([doc.config.target_runtimes[j],'runtimes', doc.space_id]);"+
+              " } } if (doc.runtime && doc.runtime !== '') { emit([doc.runtime, 'language', doc.space_id]); } }",
+              reduce: "_count",
+            },
             by_repo_hash: {
               map: "function(doc) { " +
                 "if(! doc.hasOwnProperty('instance_index') || " +
@@ -130,6 +135,14 @@ program
                 "emit([doc.repository_url_hash, doc.repository_url, " +
                 "doc.date_received.substring(0, 4), doc.date_received.substring(5, 7), " +
                 "doc.date_received.substring(8, 10), doc.space_id, doc.application_version]); } }",
+              reduce: "_count",
+            },
+            by_repo_hash_unique: {
+              map: "function(doc) { " +
+                "if(! doc.hasOwnProperty('instance_index') || " +
+                " (doc.hasOwnProperty('instance_index') && doc.instance_index == '0')) { " +
+                "emit([doc.repository_url_hash, doc.repository_url, doc.date_received.substring(0, 4), " +
+                "doc.date_received.substring(5, 7), doc.space_id]); } }",
               reduce: "_count",
             },
             apps_by_year_and_month: {

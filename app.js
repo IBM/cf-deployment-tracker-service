@@ -223,7 +223,7 @@ app.get("/graphs", forceSslIfNotLocal, function(req, res) {
     var app = req.app;
     var deploymentTrackerDb = app.get("deployment-tracker-db");
     var eventsDb = deploymentTrackerDb.use("usagedata");
-    eventsDb.get('services-dev',function (err, body) {
+    eventsDb.get('services',function (err, body) {
       if(!err){
         try{
           var output = body['services'];
@@ -248,7 +248,7 @@ app.get("/graphs/:hash", forceSslIfNotLocal, function(req, res) {
     var eventsDb = deploymentTrackerDb.use("usagedata");
     var usagePerUnit = [];
     var perUnit = [];
-    eventsDb.get('services-dev',function (err, body) {
+    eventsDb.get('services',function (err, body) {
       if(!err){
         try{
           var output = body['services'];
@@ -272,67 +272,68 @@ app.get("/graphs/:hash", forceSslIfNotLocal, function(req, res) {
   });
 
 app.get("/", forceSslIfNotLocal, function(req, res) {
-  var app = req.app;
-  var deploymentTrackerDb = app.get("deployment-tracker-db");
-  if (!deploymentTrackerDb) {
-    return res.status(500);
-  }
-  var eventsDb = deploymentTrackerDb.use("events");
-  eventsDb.view("deployments", "by_repo", {group_level: 1}, function(err, body) {
-    var apps = {};
-    body.rows.map(function(row) {
-      var url = row.key[0];
-      var count = row.value;
-      if (!(url in apps)) {
-        apps[url] = {
-          url: url,
-          count: count,
-        };
-      }
-    });
+  // var app = req.app;
+  // var deploymentTrackerDb = app.get("deployment-tracker-db");
+  // if (!deploymentTrackerDb) {
+  //   return res.status(500);
+  // }
+  // var eventsDb = deploymentTrackerDb.use("events");
+  // eventsDb.view("deployments", "by_repo", {group_level: 1}, function(err, body) {
+  //   var apps = {};
+  //   body.rows.map(function(row) {
+  //     var url = row.key[0];
+  //     var count = row.value;
+  //     if (!(url in apps)) {
+  //       apps[url] = {
+  //         url: url,
+  //         count: count,
+  //       };
+  //     }
+  //   });
 
-      //get count for each app
-      async.forEachOf(apps, function (value, key, callback) {
-        getStats(key, function(error, data) {
-          if (error) {
-            callback(error);
-          }
-          else {
-            value.githubStats = data;
-            apps[key] = value;
-            callback(null);
-          }
-        });
-      }, function() {
-        var appsSortedByCount = [];
-        var sum = 0;
-        for (var url in apps) {
-          sum+=apps[url].count;
-          appsSortedByCount.push(apps[url]);
-        }
-        appsSortedByCount.sort(function(a, b) {
-          if (a.count < b.count) {
-            return -1;
-          }
-          if (a.count > b.count) {
-            return 1;
-          }
-          return 0;
-        }).reverse();
-        //Calculate top 5 repositories.
-        var data = [];
-        for(var i = 0; i < 5; i++){
-          var link = appsSortedByCount[i].url;
-          var urlSuffix = link.split('.com/');
-          var repoPrefix = urlSuffix[urlSuffix.length - 1].split('.');
-          var key = repoPrefix[0];
-          var value = Math.round((appsSortedByCount[i].count/sum)*10000)/100
-          var item = {"key": key, "value" : value};
-          data.push(item);
-        } 
-        res.render("index", {data: JSON.stringify(data)});
-      });
-    });
+  //     //get count for each app
+  //     async.forEachOf(apps, function (value, key, callback) {
+  //       getStats(key, function(error, data) {
+  //         if (error) {
+  //           callback(error);
+  //         }
+  //         else {
+  //           value.githubStats = data;
+  //           apps[key] = value;
+  //           callback(null);
+  //         }
+  //       });
+  //     }, function() {
+  //       var appsSortedByCount = [];
+  //       var sum = 0;
+  //       for (var url in apps) {
+  //         sum+=apps[url].count;
+  //         appsSortedByCount.push(apps[url]);
+  //       }
+  //       appsSortedByCount.sort(function(a, b) {
+  //         if (a.count < b.count) {
+  //           return -1;
+  //         }
+  //         if (a.count > b.count) {
+  //           return 1;
+  //         }
+  //         return 0;
+  //       }).reverse();
+  //       //Calculate top 5 repositories.
+  //       var data = [];
+  //       for(var i = 0; i < 5; i++){
+  //         var link = appsSortedByCount[i].url;
+  //         var urlSuffix = link.split('.com/');
+  //         var repoPrefix = urlSuffix[urlSuffix.length - 1].split('.');
+  //         var key = repoPrefix[0];
+  //         var value = Math.round((appsSortedByCount[i].count/sum)*10000)/100
+  //         var item = {"key": key, "value" : value};
+  //         data.push(item);
+  //       } 
+    //     res.render("index", {data: JSON.stringify(data)});
+    //   });
+    // });
+    res.render("index");
    });
 
 // Get metrics overview
@@ -343,7 +344,7 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
     return res.status(500);
   }
   var eventsDb = deploymentTrackerDb.use("events");
-  eventsDb.view("deployments", "by_repo", {group_level: 3}, function(err, body) {
+  eventsDb.view("deployments", "by_repo_unique", {group_level: 4}, function(err, body) {
     var apps = {};
     body.rows.map(function(row) {
       var url = row.key[0];
@@ -366,50 +367,61 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
         apps[url].deploys[year] = {};
       }
       if (!(month in apps[url].deploys[year])) {
-        apps[url].deploys[year][month] = row.value;
-        apps[url].count += row.value;
+        apps[url].deploys[year][month] = 1;
+        apps[url].count += 1;
+      }else{
+        apps[url].deploys[year][month] += 1;
+        apps[url].count += 1;
       }
     });
 
     //Get service and runtime count
-    eventsDb.view("deployments", "by_runtime_service", {group_level: 2}, function(err2, body2) {
+    eventsDb.view("deployments", "by_runtime_service_unique", {group_level: 3}, function(err2, body2) {
       var usagedataDb = deploymentTrackerDb.use("usagedata");
       var output = [];
-      usagedataDb.get('services-dev',function (err, body) {
+      usagedataDb.get('services',function (err, body) {
       if(!err){
         try{
           output = body['usage'];
         }catch(ex){
         }
       }
-        var runtimes = [];
-        var services = [];
-        var languages = [];
+        var runtime = {};
+        var service = {};
+        var language = {};
         var serviceCount = 0;
         body2.rows.map(function(row) {
           var item = row.key[0];
           var identifier = row.key[1];
-          var count = row.value;
           if(identifier=="runtimes"){
-            var runtime = {
-              key: item,
-              value: count
-            };
-            runtimes.push(runtime);
+            if(!(item in runtime)){
+              runtime[item] = 1;
+            }else{
+              runtime[item] += 1;
+            }
           }else if(identifier=="services"){
-            var service = {
-              key: item,
-              value: count
-            };
-            serviceCount+=count;
-            services.push(service); 
+            if(!(item in service)){
+              service[item] = 1;
+            }else{
+              service[item] += 1;
+            }
           }else if(identifier=="language"){
-            var language = {
-              key: item,
-              value: count
-            };
-            languages.push(language);
+            if(!(item in language)){
+              language[item] = 1;
+            }else{
+              language[item] += 1;
+            }
           }
+        });
+        var runtimes = Object.keys(runtime).map(function(key) {
+          return {key: key, value: runtime[key]};
+        });
+        var services = Object.keys(service).map(function(key) {
+          serviceCount += 1;
+          return {key: key, value: service[key]};
+        });
+        var languages = Object.keys(language).map(function(key) {
+          return {key: key, value: language[key]};
         });
         //List the top 9 services, and set the rest of the counts to "others"
         if(services.length > 9){
@@ -469,27 +481,27 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
 });
 
 // Get CSV of metrics overview
-app.get("/stats.csv", forceSslIfNotLocal, function(req, res) {
-  var app = req.app;
-  var deploymentTrackerDb = app.get("deployment-tracker-db");
-  if (!deploymentTrackerDb) {
-    return res.status(500);
-  }
-  var eventsDb = deploymentTrackerDb.use("events");
-  eventsDb.view("deployments", "by_repo", {group_level: 3}, function(err, body) {
-    var apps = [
-      ["URL", "Year", "Month", "Deployments"]
-    ];
-    body.rows.map(function(row) {
-      var url = row.key[0];
-      var year = row.key[1];
-      var month = row.key[2];
-      var count = row.value;
-      apps.push([url, year, month, count]);
-    });
-    res.csv(apps);
-  });
-});
+// app.get("/stats.csv", forceSslIfNotLocal, function(req, res) {
+//   var app = req.app;
+//   var deploymentTrackerDb = app.get("deployment-tracker-db");
+//   if (!deploymentTrackerDb) {
+//     return res.status(500);
+//   }
+//   var eventsDb = deploymentTrackerDb.use("events");
+//   eventsDb.view("deployments", "by_repo", {group_level: 3}, function(err, body) {
+//     var apps = [
+//       ["URL", "Year", "Month", "Deployments"]
+//     ];
+//     body.rows.map(function(row) {
+//       var url = row.key[0];
+//       var year = row.key[1];
+//       var month = row.key[2];
+//       var count = row.value;
+//       apps.push([url, year, month, count]);
+//     });
+//     res.csv(apps);
+//   });
+// });
 
 // Get JSON of metrics overview
 app.get("/repos", forceSslIfNotLocal, function(req, res) {
@@ -528,8 +540,8 @@ app.get("/stats/:hash", forceSslIfNotLocal, function(req, res) {
   var eventsDb = deploymentTrackerDb.use("events");
   var hash = req.params.hash;
 
-  eventsDb.view("deployments", "by_repo_hash",
-    {startkey: [hash], endkey: [hash, {}, {}, {}, {}, {}, {}], group_level: 4}, function(err, body) {
+  eventsDb.view("deployments", "by_repo_hash_unique",
+    {startkey: [hash], endkey: [hash, {}, {}, {}, {}], group_level: 5}, function(err, body) {
     var apps = {},
       protocolAndHost = req.protocol + "://" + req.get("host");
     body.rows.map(function(row) {
@@ -540,7 +552,7 @@ app.get("/stats/:hash", forceSslIfNotLocal, function(req, res) {
       if (!(url in apps)) {
         apps[url] = {
           url: url,
-          count: 0,
+          count: body.rows.length,
           deploys: []
         };
         if (hash) {
@@ -572,8 +584,9 @@ app.get("/stats/:hash", forceSslIfNotLocal, function(req, res) {
         apps[url].deploys[year] = {};
       }
       if (!(month in apps[url].deploys[year])) {
-        apps[url].deploys[year][month] = row.value;
-        apps[url].count += row.value;
+        apps[url].deploys[year][month] = 1;
+      }else{
+        apps[url].deploys[year][month] += 1;
       }
     });
     for (var url in apps) {
@@ -598,26 +611,26 @@ app.get("/stats/:hash", forceSslIfNotLocal, function(req, res) {
 });
 
 // Public API to get metrics for a specific repo
-app.get("/stats/:hash/metrics.json", forceSslIfNotLocal, function(req, res) {
-  var app = req.app,
-    deploymentTrackerDb = app.get("deployment-tracker-db");
+// app.get("/stats/:hash/metrics.json", forceSslIfNotLocal, function(req, res) {
+//   var app = req.app,
+//     deploymentTrackerDb = app.get("deployment-tracker-db");
 
-  if (!deploymentTrackerDb) {
-    return res.status(500);
-  }
-  var eventsDb = deploymentTrackerDb.use("events"),
-   hash = req.params.hash;
+//   if (!deploymentTrackerDb) {
+//     return res.status(500);
+//   }
+//   var eventsDb = deploymentTrackerDb.use("events"),
+//    hash = req.params.hash;
 
-  //TODO: Consider caching this data with Redis
-  eventsDb.view("deployments", "by_repo_hash",
-    {startkey: [hash], endkey: [hash, {}, {}, {}, {}, {}, {}], group_level: 1}, function(err, body) {
-    var appStats = {
-      url_hash: hash,
-      count: body.rows[0].value
-    };
-    res.json(appStats);
-  });
-});
+//   //TODO: Consider caching this data with Redis
+//   eventsDb.view("deployments", "by_repo_hash",
+//     {startkey: [hash], endkey: [hash, {}, {}, {}, {}, {}, {}], group_level: 1}, function(err, body) {
+//     var appStats = {
+//       url_hash: hash,
+//       count: body.rows[0].value
+//     };
+//     res.json(appStats);
+//   });
+// });
 
 // Get badge of metrics for a specific repo
 app.get("/stats/:hash/badge.svg", forceSslIfNotLocal, function(req, res) {
@@ -631,9 +644,9 @@ app.get("/stats/:hash/badge.svg", forceSslIfNotLocal, function(req, res) {
    hash = req.params.hash;
 
   //TODO: Consider caching this data with Redis
-  eventsDb.view("deployments", "by_repo_hash",
-    {startkey: [hash], endkey: [hash, {}, {}, {}, {}, {}, {}], group_level: 1}, function(err, body) {
-    var count = body.rows[0].value;
+  eventsDb.view("deployments", "by_repo_hash_unique",
+    {startkey: [hash], endkey: [hash, {}, {}, {}, {}], group_level: 5}, function(err, body) {
+    var count = body.rows.length;
     //TODO: Rename this variable
     var svgData = {
       left: "Bluemix Deployments",
@@ -663,9 +676,9 @@ app.get("/stats/:hash/button.svg", forceSslIfNotLocal, function(req, res) {
    hash = req.params.hash;
 
   //TODO: Consider caching this data with Redis
-  eventsDb.view("deployments", "by_repo_hash",
-    {startkey: [hash], endkey: [hash, {}, {}, {}, {}, {}, {}], group_level: 1}, function(err, body) {
-    var count = body.rows[0].value;
+  eventsDb.view("deployments", "by_repo_hash_unique",
+    {startkey: [hash], endkey: [hash, {}, {}, {}, {}], group_level: 5}, function(err, body) {
+    var count = body.rows.length;
     //TODO: Rename this variable
     var svgData = {
       left: "Deploy to Bluemix",
@@ -792,7 +805,7 @@ function track(req, res) {
   var provider = '';
   if(req.body.provider) provider = req.body.provider;
   if(req.body.config) event.config = req.body.config;
-  if(req.body.bot_name) event.chatbot_name = req.body.bot_name.replace(/[^A-Za-z\s!?]/g,'');
+  if(req.body.bot_name) event.chatbot_name = req.body.bot_name;
   if(req.body.service_id) event.service_id = req.body.service_id;
   //Sent data to Segment
   metric.sentAnalytic(event,req.body.config, provider);
