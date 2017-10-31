@@ -219,7 +219,7 @@ function getStats(repo, callback) {
   }
 }
 
-app.get("/graphs", forceSslIfNotLocal, function(req, res) {
+app.get("/graphs", [forceSslIfNotLocal, authenticate()], function(req, res) {
     var app = req.app;
     var deploymentTrackerDb = app.get("deployment-tracker-db");
     var eventsDb = deploymentTrackerDb.use("usagedata");
@@ -240,7 +240,7 @@ app.get("/graphs", forceSslIfNotLocal, function(req, res) {
     });
   });
 
-app.get("/graphs/:hash", forceSslIfNotLocal, function(req, res) {
+app.get("/graphs/:hash", [forceSslIfNotLocal, authenticate()], function(req, res) {
     var app = req.app;
     var hash = req.params.hash;
     var serviceTitle = '';
@@ -272,72 +272,11 @@ app.get("/graphs/:hash", forceSslIfNotLocal, function(req, res) {
   });
 
 app.get("/", forceSslIfNotLocal, function(req, res) {
-  // var app = req.app;
-  // var deploymentTrackerDb = app.get("deployment-tracker-db");
-  // if (!deploymentTrackerDb) {
-  //   return res.status(500);
-  // }
-  // var eventsDb = deploymentTrackerDb.use("events");
-  // eventsDb.view("deployments", "by_repo", {group_level: 1}, function(err, body) {
-  //   var apps = {};
-  //   body.rows.map(function(row) {
-  //     var url = row.key[0];
-  //     var count = row.value;
-  //     if (!(url in apps)) {
-  //       apps[url] = {
-  //         url: url,
-  //         count: count,
-  //       };
-  //     }
-  //   });
-
-  //     //get count for each app
-  //     async.forEachOf(apps, function (value, key, callback) {
-  //       getStats(key, function(error, data) {
-  //         if (error) {
-  //           callback(error);
-  //         }
-  //         else {
-  //           value.githubStats = data;
-  //           apps[key] = value;
-  //           callback(null);
-  //         }
-  //       });
-  //     }, function() {
-  //       var appsSortedByCount = [];
-  //       var sum = 0;
-  //       for (var url in apps) {
-  //         sum+=apps[url].count;
-  //         appsSortedByCount.push(apps[url]);
-  //       }
-  //       appsSortedByCount.sort(function(a, b) {
-  //         if (a.count < b.count) {
-  //           return -1;
-  //         }
-  //         if (a.count > b.count) {
-  //           return 1;
-  //         }
-  //         return 0;
-  //       }).reverse();
-  //       //Calculate top 5 repositories.
-  //       var data = [];
-  //       for(var i = 0; i < 5; i++){
-  //         var link = appsSortedByCount[i].url;
-  //         var urlSuffix = link.split('.com/');
-  //         var repoPrefix = urlSuffix[urlSuffix.length - 1].split('.');
-  //         var key = repoPrefix[0];
-  //         var value = Math.round((appsSortedByCount[i].count/sum)*10000)/100
-  //         var item = {"key": key, "value" : value};
-  //         data.push(item);
-  //       } 
-    //     res.render("index", {data: JSON.stringify(data)});
-    //   });
-    // });
     res.render("index");
    });
 
 // Get metrics overview
-app.get("/stats", forceSslIfNotLocal, function(req, res) {
+app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
   if (!deploymentTrackerDb) {
@@ -504,7 +443,7 @@ app.get("/stats", forceSslIfNotLocal, function(req, res) {
 // });
 
 // Get JSON of metrics overview
-app.get("/repos", forceSslIfNotLocal, function(req, res) {
+app.get("/repos", [forceSslIfNotLocal, authenticate()], function(req, res) {
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
 
@@ -529,7 +468,7 @@ app.get("/repos", forceSslIfNotLocal, function(req, res) {
 });
 
 // Get metrics for a specific repo
-app.get("/stats/:hash", forceSslIfNotLocal, function(req, res) {
+app.get("/stats/:hash", [forceSslIfNotLocal, authenticate()], function(req, res) {
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
   var appsSortedByCount = [];
