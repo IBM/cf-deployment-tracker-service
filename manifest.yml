@@ -9,8 +9,8 @@ declared-services:
 applications:
 - name: deployment-tracker-DO-NOT-DELETE
   host: metrics-tracker
-  memory: 256M
-  instances: 5
+  memory: 512M
+  instances: 4
   random-route: true
   services:
   - deployment-tracker-db

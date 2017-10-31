@@ -78,5 +78,4 @@ function sentData(data){
 		//Error on the service attribute or not enough services.
 		return services;
 	}
-
  }
