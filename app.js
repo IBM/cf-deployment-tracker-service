@@ -588,7 +588,7 @@ app.get("/stats/:hash/badge.svg", forceSslIfNotLocal, function(req, res) {
     var count = body.rows.length;
     //TODO: Rename this variable
     var svgData = {
-      left: "Bluemix Deployments",
+      left: "IBM Cloud Deployments",
       right: count.toString(),
     };
     svgData.leftWidth = svgData.left.length * 6.5 + 10;
@@ -620,7 +620,7 @@ app.get("/stats/:hash/button.svg", forceSslIfNotLocal, function(req, res) {
     var count = body.rows.length;
     //TODO: Rename this variable
     var svgData = {
-      left: "Deploy to Bluemix",
+      left: "Deploy to IBM Cloud",
       right: count.toString(),
     };
     svgData.leftWidth = svgData.left.length * 11 + 20;
