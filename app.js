@@ -746,8 +746,11 @@ function track(req, res) {
   if(req.body.config) event.config = req.body.config;
   if(req.body.bot_name) event.chatbot_name = req.body.bot_name;
   if(req.body.service_id) event.service_id = req.body.service_id;
+  var kube = {};
+  if(req.body.clusterid) kube.cluster_id = req.body.clusterid;
+  if(req.body.customerid) kube.customer_id = req.body.customerid;
   //Sent data to Segment
-  metric.sentAnalytic(event,req.body.config, provider);
+  metric.sentAnalytic(event,req.body.config, provider, kube);
   if(provider) event.provider = provider;
 
   var eventsDb = deploymentTrackerDb.use("events");

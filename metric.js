@@ -1,8 +1,8 @@
 var Analytics = require('analytics-node');
 var analytics = new Analytics(process.env.WRITE_KEY);
 module.exports = {
-	sentAnalytic: function(data,config,provider){
-		var newData = massage(data,config,provider);
+	sentAnalytic: function(data,config,provider,kube){
+		var newData = massage(data,config,provider,kube);
 		sentData(newData);
 		return newData;
 	},
@@ -11,7 +11,7 @@ module.exports = {
 	}
 };
 
-function massage(data,config,provider){
+function massage(data,config,provider,kube){
 	//rename entries to our segment format
 	var newData = {
 		repository_id : '',
@@ -22,6 +22,7 @@ function massage(data,config,provider){
 		event_organizer: ''
 	};
 	newData.cfMetric = JSON.parse(JSON.stringify(data));
+	newData.kube = JSON.parse(JSON.stringify(kube));
 	try{
 		if(config){
 			if(config.repository_id) newData.repository_id = config.repository_id;
