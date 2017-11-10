@@ -39,7 +39,11 @@
           ? donutchartdata.keys
           : data.map(function (d) { return d.key })
 
-        keys.sort(function (a, b) { return a > b })
+        // keys.sort(function (a, b) { 
+        //   let obj1 = data.find(o => o.key == a);
+        //   let obj2 = data.find(o => o.key == b);
+        //   return obj1.value > obj2.value });
+        // keys.reverse();
 
         var padding = 5
         var box = selection.node().getBoundingClientRect()
@@ -152,8 +156,8 @@
         legendkey.enter().append('rect')
           .attr('class', 'legend')
           // .attr('opacity', 0)
-          .attr('x', padding)
-          .attr('y', function (d, i) { return (i * 20) + padding })
+          .attr('x', function (d, i) { return (Math.floor(i/14) * 350) + padding })
+          .attr('y', function (d, i) { return (i%14 * 20) + padding })
           .attr('width', 18)
           .attr('height', 18)
 
@@ -172,15 +176,15 @@
         // add new labels
         legendlabel.enter().append('text')
           .attr('class', 'legend')
-          .attr('x', 24 + padding)
-          .attr('y', function (d, i) { return (i * 20 + 9) + padding })
+          .attr('x', function (d, i) { return (Math.floor(i/14) * 350 + 24) + padding })
+          .attr('y', function (d, i) { return (i%14 * 20 + 9) + padding })
           .attr('dy', '.35em')
 
         // update labels
         legendlabel.text(function (d) {
           var current = data.filter(function (_d) { return _d.key === d })
           var v = current.length > 0 ? current[0].value : 0
-          return d + ': ' + percent(v / total)
+          return d + ': ' + Math.ceil(v / total * 100) + "%"
         })
 
         // remove old labels
@@ -198,7 +202,11 @@
           ? donutchartdata.keys
           : data.map(function (d) { return d.key })
 
-        keys.sort(function (a, b) { return a > b })
+        // keys.sort(function (a, b) { 
+        //   let obj1 = data.find(o => o.key == a);
+        //   let obj2 = data.find(o => o.key == b);
+        //   return obj1.value > obj2.value });
+        // keys.reverse();
 
         var padding = 5
         var box = selection.node().getBoundingClientRect()
@@ -316,8 +324,8 @@
             .attr('width', 18)
             .attr('height', 18)
           .merge(legendkey)
-            .attr('x', padding)
-            .attr('y', function (d, i) { return (i * 20) + padding })
+            .attr('x', function (d, i) { return (Math.floor(i/14) * 350) + padding })
+            .attr('y', function (d, i) { return (i%14 * 20) + padding })
 
         // update keys
         legendkey.style('fill', function (d) { return color(d) })
@@ -336,14 +344,14 @@
             .attr('class', 'legend')
             .attr('dy', '.35em')
           .merge(legendlabel)
-            .attr('x', 24 + padding)
-            .attr('y', function (d, i) { return (i * 20 + 9) + padding })
+            .attr('x', function (d, i) { return (Math.floor(i/14) * 350 + 24) + padding })
+            .attr('y', function (d, i) { return (i%14 * 20 + 9) + padding })
 
         // update labels
         legendlabel.text(function (d) {
           var current = data.filter(function (_d) { return _d.key === d })
           var v = current.length > 0 ? current[0].value : 0
-          return d + ': ' + percent(v / total)
+          return d + ': ' + Math.ceil(v / total * 100) + "%"
         })
 
         // remove old labels

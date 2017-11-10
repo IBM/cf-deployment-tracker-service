@@ -8,6 +8,17 @@ module.exports = {
 	},
 	listTop9Services: function(services, serviceCount){
 		return top9Services(services, serviceCount);
+	},
+	sortItem: function(array){
+		array.sort(function(a, b) {
+          if (a.value < b.value) {
+            return -1;
+          }
+          if (a.value > b.value) {
+            return 1;
+          }
+          return 0;
+        }).reverse();
 	}
 };
 

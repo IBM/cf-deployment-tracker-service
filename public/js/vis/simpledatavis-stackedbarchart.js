@@ -357,7 +357,13 @@
             .on('end', function (d, i) {
               d3.select(this)
                 .on('mouseover', function (d, i) {
-                  SimpleDataVis.tooltip.mouseover({key: d.data.key, value: (d[1] - d[0]), data: d.data}, i, opts)
+                  //SimpleDataVis.tooltip.mouseover({key: d.data.key, value: (d[1] - d[0]), data: d.data}, i, opts)
+                  var val = d[1] - d[0];
+                  var servicekey = d.data.key
+                  Object.keys(d.data.value).map(function(key) {
+                  if (d.data.value[key] == val ){servicekey = key;}
+                  });
+                  SimpleDataVis.tooltip.mouseover({key: servicekey, value: (d[1] - d[0]), data: 0}, i, opts)
                 })
                 .on('mousemove', SimpleDataVis.tooltip.mousemove)
                 .on('mouseout', SimpleDataVis.tooltip.mouseout)

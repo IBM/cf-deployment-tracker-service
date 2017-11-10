@@ -219,6 +219,37 @@ function getStats(repo, callback) {
   }
 }
 
+app.get("/users", [forceSslIfNotLocal, authenticate()], function(req, res) {
+    var app = req.app;
+    var deploymentTrackerDb = app.get("deployment-tracker-db");
+    var eventsDb = deploymentTrackerDb.use("usagedata");
+    eventsDb.get('services',function (err, body) {
+      if(!err){
+        try{
+          var users = body['users'];
+          var revenue = body['serviceCost'];
+          res.render("users", {users: JSON.stringify(users), revenue: JSON.stringify(revenue)});
+        }catch(ex){
+        }
+      }
+    });
+  });
+
+app.get("/bluemix", [forceSslIfNotLocal, authenticate()], function(req, res) {
+    var app = req.app;
+    var deploymentTrackerDb = app.get("deployment-tracker-db");
+    var eventsDb = deploymentTrackerDb.use("usagedata");
+    eventsDb.get('services',function (err, body) {
+      if(!err){
+        try{
+          var bluemixOutput = body['servicesAllBluemix'];
+          res.render("bluemix", {dataTotal: JSON.stringify(bluemixOutput)});
+        }catch(ex){
+        }
+      }
+    });
+  });
+
 app.get("/graphs", [forceSslIfNotLocal, authenticate()], function(req, res) {
     var app = req.app;
     var deploymentTrackerDb = app.get("deployment-tracker-db");
@@ -228,12 +259,13 @@ app.get("/graphs", [forceSslIfNotLocal, authenticate()], function(req, res) {
         try{
           var output = body['services'];
           var usage = body['usage'];
-          var users = body['users'];
+          var cloudfoundry = body['cloudfoundry'];
           usage.forEach(function(service){
             service["key2"] = service.key.replace(/\s+/g, '');
           });
           res.render("graphs", {dataW: JSON.stringify(output),
-                                dataRaw: usage, users: JSON.stringify(users)});
+                                dataRaw: usage,
+                                cloudfoundry: JSON.stringify(cloudfoundry)});
         }catch(ex){
         }
       }
@@ -318,17 +350,10 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
     eventsDb.view("deployments", "by_runtime_service_unique", {group_level: 3}, function(err2, body2) {
       var usagedataDb = deploymentTrackerDb.use("usagedata");
       var output = [];
-      usagedataDb.get('services',function (err, body) {
-      if(!err){
-        try{
-          output = body['usage'];
-        }catch(ex){
-        }
-      }
         var runtime = {};
         var service = {};
         var language = {};
-        var serviceCount = 0;
+        // var serviceCount = 0;
         body2.rows.map(function(row) {
           var item = row.key[0];
           var identifier = row.key[1];
@@ -355,18 +380,26 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
         var runtimes = Object.keys(runtime).map(function(key) {
           return {key: key, value: runtime[key]};
         });
+
+        var deprecated = ['Weather Company Data', 'Watson IoT Platform', 'Object Storage', 'Push Notifications','null'];
+        for(var i = 0; i < deprecated.length; i++){
+          delete service[deprecated[i]];
+        }
         var services = Object.keys(service).map(function(key) {
-          serviceCount += 1;
+         // serviceCount += 1;
           return {key: key, value: service[key]};
         });
         var languages = Object.keys(language).map(function(key) {
           return {key: key, value: language[key]};
         });
         //List the top 9 services, and set the rest of the counts to "others"
-        if(services.length > 9){
-          services = metric.listTop9Services(services,serviceCount);
-        }
-      //get count for each app
+        // if(services.length > 9){
+        //   services = metric.listTop9Services(services,serviceCount);
+        // }
+      //sort count for each app
+        metric.sortItem(runtimes);
+        metric.sortItem(services);
+        metric.sortItem(languages);
       async.forEachOf(apps, function (value, key, callback) {
         getStats(key, function(error, data) {
           if (error) {
@@ -405,11 +438,6 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
           var item = {"key": key, "value" : value};
           data.push(item);
         }
-
-        //use warehouse data if available
-        if (typeof output !== 'undefined' && output.length > 0){
-          services = output;
-        }
         res.render("stats", {data: JSON.stringify(data), apps: appsSortedByCount, 
           services: JSON.stringify(services), runtimes: JSON.stringify(runtimes),
           languages: JSON.stringify(languages)});
@@ -417,7 +445,6 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
     });
    });
  });
-});
 
 // Get CSV of metrics overview
 // app.get("/stats.csv", forceSslIfNotLocal, function(req, res) {

@@ -31,28 +31,25 @@
         <h1>Metrics Collector</h1>
         <p>Deployment and usage metrics for applications and workloads on CloudFoundry, Kubernetes, OpenWhisk etc.</p>
 <!--         <p><a class="btn btn-primary btn-lg" href="https://github.com/IBM-Bluemix/cf-deployment-tracker-service" target="_blank" role="button">View the source code on GitHub <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></p> -->
-    <article>
+    <article>         
       <ol class="breadcrumb">
           <li><a href="/stats">Stats</a></li>
           <li><a href="/graphs">Graphs</a></li>
-          <li class="active">Service (Pattern User Service Statistics)</li>
+          <li class="active">IBM Cloud (IBM Cloud Statistics)</li>
         </ol>
     </article>
       </div>
-    </div>     
+    </div>
+    </div>
+      <div class="col-xs-12 col-md-12 col-lg-12">
     <figure class="guide-example theme_light bg_light-tint">
         <p class="type_mark" style="font-size: 30px">
-          Estimated {{service}} usage by Unit from Journey users.</p>
+          API calls from all IBM Cloud users. 
+        </p>
+        <div id="datatotalvischart"></div>
+        <p style="font-size: 10px"> Note: 1G = 1 Billion</p>
     </figure>
-    {{#each dataRaw}}
-    <div class="col-xs-6 col-md-6 col-lg-6">
-      <figure class="guide-example theme_light bg_light-tint">
-          <p class="type_mark" style="font-size: 25px; color: gray; font-weight: bold;">
-            {{key}}</p>
-          <div id="{{key}}"></div>
-      </figure>
-    </div>
-    {{/each}}
+     </div>
     <script src="/assets/jquery/dist/jquery.min.js"></script>
     <script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/assets/zeroclipboard/dist/ZeroClipboard.min.js"></script>
@@ -71,17 +68,13 @@
       return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
     }
     //graphs
-     var dataU = JSON.parse(htmlDecode("{{dataU}}"));
-     Object.keys(dataU).map(function(key){
-        window.addEventListener('DOMContentLoaded', function () {
-         SimpleDataVis(dataU[key])
-           .attr('type', 'grouped-bar-chart')
-           .attr('tooltip', function (d) {
-           return d.key + ': ' + d.value 
-            })
-           .render('#' + key)
-       })
-     });
+     var dataTotal = JSON.parse(htmlDecode("{{dataTotal}}"));
+     window.addEventListener('DOMContentLoaded', function () {
+       // All Bluemix usage
+       SimpleDataVis(dataTotal)
+         .attr('type', 'stacked-bar-chart')
+         .render('#datatotalvischart')
+     })
     </script>
   </body>
 </html>
