@@ -31,28 +31,30 @@
         <h1>Metrics Collector</h1>
         <p>Deployment and usage metrics for applications and workloads on CloudFoundry, Kubernetes, OpenWhisk etc.</p>
 <!--         <p><a class="btn btn-primary btn-lg" href="https://github.com/IBM-Bluemix/cf-deployment-tracker-service" target="_blank" role="button">View the source code on GitHub <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></p> -->
-    <article>
+    <article>         
       <ol class="breadcrumb">
           <li><a href="/stats">Stats</a></li>
           <li><a href="/graphs">Graphs</a></li>
-          <li class="active">Service (Pattern User Service Statistics)</li>
+          <li class="active">Users (User Statistics)</li>
         </ol>
     </article>
       </div>
-    </div>     
-    <figure class="guide-example theme_light bg_light-tint">
-        <p class="type_mark" style="font-size: 30px">
-          Estimated {{service}} usage by Unit from Journey users.</p>
-    </figure>
-    {{#each dataRaw}}
-    <div class="col-xs-6 col-md-6 col-lg-6">
-      <figure class="guide-example theme_light bg_light-tint">
-          <p class="type_mark" style="font-size: 25px; color: gray; font-weight: bold;">
-            {{key}}</p>
-          <div id="{{key}}"></div>
-      </figure>
     </div>
-    {{/each}}
+     <div class="col-xs-7 col-md-7 col-lg-7">
+      <figure class="guide-example theme_light bg_light-tint">
+            <p class="type_mark" style="font-size: 30px">
+              Estimated Pattern User revenue</p>
+              <div id="dataviscost"></div>
+      </figure>
+     </div>
+    </div>
+      <div class="col-xs-5 col-md-5 col-lg-5">
+      <figure class="guide-example theme_light bg_light-tint">
+            <p class="type_mark" style="font-size: 30px">
+              Estimated Unique Pattern Users</p>
+              <div id="datavisuser"></div>
+      </figure>
+     </div>
     <script src="/assets/jquery/dist/jquery.min.js"></script>
     <script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/assets/zeroclipboard/dist/ZeroClipboard.min.js"></script>
@@ -71,17 +73,20 @@
       return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
     }
     //graphs
-     var dataU = JSON.parse(htmlDecode("{{dataU}}"));
-     Object.keys(dataU).map(function(key){
-        window.addEventListener('DOMContentLoaded', function () {
-         SimpleDataVis(dataU[key])
-           .attr('type', 'grouped-bar-chart')
-           .attr('tooltip', function (d) {
-           return d.key + ': ' + d.value 
-            })
-           .render('#' + key)
-       })
-     });
+     var users = JSON.parse(htmlDecode("{{users}}"));
+     var revenue = JSON.parse(htmlDecode("{{revenue}}"));
+     window.addEventListener('DOMContentLoaded', function () {
+       //Number of users
+       SimpleDataVis(users)
+         .attr('type', 'grouped-bar-chart')
+         .attr('tooltip', function (d) {
+         return d.key + ': ' + d.value 
+          })
+         .render('#datavisuser')
+       SimpleDataVis(revenue)
+         .attr('type', 'stacked-bar-chart')
+         .render('#dataviscost')
+     })
     </script>
   </body>
 </html>

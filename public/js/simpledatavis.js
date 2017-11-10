@@ -580,6 +580,7 @@
     require('./vis/simpledatavis-barchart')(SimpleDataVis)
     require('./vis/simpledatavis-bubblechart')(SimpleDataVis)
     require('./vis/simpledatavis-groupedbarchart')(SimpleDataVis)
+    require('./vis/simpledatavis-groupedbarchart-2')(SimpleDataVis)
     require('./vis/simpledatavis-piechart')(SimpleDataVis)
     require('./vis/simpledatavis-rangebarchart')(SimpleDataVis)
     require('./vis/simpledatavis-stackedbarchart')(SimpleDataVis)
