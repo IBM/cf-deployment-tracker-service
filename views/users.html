@@ -30,7 +30,6 @@
       <div class="container">
         <h1>Metrics Collector</h1>
         <p>Deployment and usage metrics for applications and workloads on CloudFoundry, Kubernetes, OpenWhisk etc.</p>
-<!--         <p><a class="btn btn-primary btn-lg" href="https://github.com/IBM-Bluemix/cf-deployment-tracker-service" target="_blank" role="button">View the source code on GitHub <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></p> -->
     <article>         
       <ol class="breadcrumb">
           <li><a href="/stats">Stats</a></li>
@@ -40,14 +39,14 @@
     </article>
       </div>
     </div>
-     <div class="col-xs-7 col-md-7 col-lg-7">
+<!--      <div class="col-xs-7 col-md-7 col-lg-7">
       <figure class="guide-example theme_light bg_light-tint">
             <p class="type_mark" style="font-size: 30px">
-              Estimated Pattern User revenue</p>
+              Estimated Pattern User revenue (in USD)</p>
               <div id="dataviscost"></div>
       </figure>
      </div>
-    </div>
+    </div> -->
       <div class="col-xs-5 col-md-5 col-lg-5">
       <figure class="guide-example theme_light bg_light-tint">
             <p class="type_mark" style="font-size: 30px">
@@ -83,9 +82,9 @@
          return d.key + ': ' + d.value 
           })
          .render('#datavisuser')
-       SimpleDataVis(revenue)
-         .attr('type', 'stacked-bar-chart')
-         .render('#dataviscost')
+       // SimpleDataVis(revenue)
+       //   .attr('type', 'stacked-bar-chart')
+       //   .render('#dataviscost')
      })
     </script>
   </body>
