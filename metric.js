@@ -65,10 +65,10 @@ function sentData(data){
  function top9Services(services, serviceCount){
 	try{
 		services.sort(function(a, b) {
-		  if (a.value < b.value) {
+		  if (parseInt(a.value) < parseInt(b.value)) {
 		    return -1;
 		  }
-		  if (a.value > b.value) {
+		  if (parseInt(a.value) > parseInt(b.value)) {
 		    return 1;
 		  }
 		  return 0;
@@ -76,7 +76,7 @@ function sentData(data){
 		var top9Count = 0;
 		var temp = [];
 		for(var i = 0; i < 9; i++){
-		  top9Count+= services[i].value;
+		  top9Count+= parseInt(services[i].value);
 		  temp.push(services[i]);
 		}
 		var others = {

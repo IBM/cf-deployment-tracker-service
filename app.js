@@ -227,8 +227,13 @@ app.get("/users", [forceSslIfNotLocal, authenticate()], function(req, res) {
       if(!err){
         try{
           var users = body['users'];
-          var revenue = body['serviceCost'];
-          res.render("users", {users: JSON.stringify(users), revenue: JSON.stringify(revenue)});
+          // var revenue = body['serviceCost'];
+          var sum = 0;
+          body['userGeo'].forEach(function(country){
+            sum+=parseInt(country.value);
+          })
+          var userGeo = metric.listTop9Services(body['userGeo'],sum);
+          res.render("users", {users: JSON.stringify(users), userGeo: JSON.stringify(userGeo)});
         }catch(ex){
         }
       }
@@ -243,7 +248,9 @@ app.get("/bluemix", [forceSslIfNotLocal, authenticate()], function(req, res) {
       if(!err){
         try{
           var bluemixOutput = body['servicesAllBluemix'];
-          res.render("bluemix", {dataTotal: JSON.stringify(bluemixOutput)});
+          var cfBluemix = body['cfBluemix'];
+          res.render("bluemix", {dataTotal: JSON.stringify(bluemixOutput),
+                                  cfBluemix: JSON.stringify(cfBluemix)});
         }catch(ex){
         }
       }
@@ -356,6 +363,9 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
         // var serviceCount = 0;
         body2.rows.map(function(row) {
           var item = row.key[0];
+          if(item != null){
+            item = item.toString().toLowerCase().replace(/-/g, " ");
+          }
           var identifier = row.key[1];
           if(identifier=="runtimes"){
             if(!(item in runtime)){
@@ -381,13 +391,13 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
           return {key: key, value: runtime[key]};
         });
 
-        var deprecated = ['Weather Company Data', 'Watson IoT Platform', 'Object Storage', 'Push Notifications','null'];
+        var deprecated = ['weather company data', 'watson iot platform', 'object storage', 'push notifications','null'];
         for(var i = 0; i < deprecated.length; i++){
           delete service[deprecated[i]];
         }
         var services = Object.keys(service).map(function(key) {
          // serviceCount += 1;
-          return {key: key, value: service[key]};
+          return {key: key.replace(/\b\w/g, l => l.toUpperCase()), value: service[key]};
         });
         var languages = Object.keys(language).map(function(key) {
           return {key: key, value: language[key]};

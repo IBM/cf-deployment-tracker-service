@@ -41,12 +41,22 @@
       </div>
     </div>
     </div>
-      <div class="col-xs-12 col-md-12 col-lg-12">
+    <div class="col-xs-12 col-md-12 col-lg-12">
     <figure class="guide-example theme_light bg_light-tint">
         <p class="type_mark" style="font-size: 30px">
           API calls from all IBM Cloud users. 
         </p>
         <div id="datatotalvischart"></div>
+        <p style="font-size: 10px"> Note: 1G = 1 Billion</p>
+    </figure>
+     </div>
+    <div class="col-xs-12 col-md-12 col-lg-12">
+    <figure class="guide-example theme_light bg_light-tint">
+        <p class="type_mark" style="font-size: 30px">
+          Cloud Foundry usage (GB per hour) from all IBM Cloud users. <br>
+          (Python, Go, PHP, Ruby, and Tomcat are Community Buildpacks) 
+        </p>
+        <div id="cfbluemixvischart"></div>
         <p style="font-size: 10px"> Note: 1G = 1 Billion</p>
     </figure>
      </div>
@@ -69,11 +79,15 @@
     }
     //graphs
      var dataTotal = JSON.parse(htmlDecode("{{dataTotal}}"));
+     var cfBluemix = JSON.parse(htmlDecode("{{cfBluemix}}"));
      window.addEventListener('DOMContentLoaded', function () {
        // All Bluemix usage
        SimpleDataVis(dataTotal)
          .attr('type', 'stacked-bar-chart')
          .render('#datatotalvischart')
+       SimpleDataVis(cfBluemix)
+         .attr('type', 'stacked-bar-chart')
+         .render('#cfbluemixvischart')
      })
     </script>
   </body>
