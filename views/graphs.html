@@ -14,7 +14,7 @@
     <script type="text/javascript" src="/js/vis/simpledatavis-piechart.js"></script>
     <script type="text/javascript" src="/js/vis/simpledatavis-timeline.js"></script>
     <script type="text/javascript" src="/js/vis/simpledatavis-stackedbarchart.js"></script>
-    <script type="text/javascript" src="/js/vis/simpledatavis-groupedbarchart-2.js"></script>
+    <script type="text/javascript" src="/js/vis/simpledatavis-groupedbarchart.js"></script>
     <style>
       .copy {
         cursor: pointer;
@@ -39,7 +39,7 @@
     </article>
       </div>
     </div>
-    <div class="col-xs-12 col-md-12 col-lg-12" id = "change">
+    <div class="col-xs-12 col-md-12 col-lg-12">
     <figure class="guide-example theme_light bg_light-tint">
         <p class="type_mark" style="font-size: 30px">
           Estimated API calls from IBM Code users. 
@@ -47,13 +47,21 @@
         </p>
         <div id="datavischart"></div>
     </figure>
-    <div class="col-xs-12 col-md-12 col-lg-12" id = "change">
+    <div class="col-xs-12 col-md-12 col-lg-12">
     <figure class="guide-example theme_light bg_light-tint">
         <p class="type_mark" style="font-size: 30px">
           Estimated Cloud Foundry usage (GB per hour) from IBM Code users. <br>
           (Python, Go, PHP, Ruby, and Tomcat are Community Buildpacks)
         </p>
         <div id="cfvischart"></div>
+    </figure>
+   </div>
+    <div class="col-xs-12 col-md-12 col-lg-12">
+    <figure class="guide-example theme_light bg_light-tint">
+        <p class="type_mark" style="font-size: 30px">
+          Estimated Kubernetes usage (Instance hours) from IBM Code users.
+        </p>
+        <div id="k8vischart"></div>
     </figure>
    </div>
    </div>
@@ -103,25 +111,32 @@
     //graphs
      var dataW = JSON.parse(htmlDecode("{{dataW}}"));
      var cloudfoundry = JSON.parse(htmlDecode("{{cloudfoundry}}"));
+     var kubernetes = JSON.parse(htmlDecode("{{kubernetes}}"));
      window.addEventListener('DOMContentLoaded', function () {
       // Journey user usage
        SimpleDataVis(dataW)
          .attr('type', 'stacked-bar-chart')
          .render('#datavischart')
       //  Cloudfoundry Runtime
-            // All Bluemix usage
        SimpleDataVis(cloudfoundry)
          .attr('type', 'stacked-bar-chart')
          .render('#cfvischart')
+      //  Kubernetes Runtime
+       SimpleDataVis(kubernetes)
+         .attr('type', 'grouped-bar-chart')
+         .attr('tooltip', function (d) {
+          return d.key + ': ' + d.value 
+        })
+         .render('#k8vischart')
      })
-     $('#more').click(function () {
-      if($('button span').hasClass('glyphicon glyphicon-collapse-down')){
-          $('#more').html('<span class="glyphicon glyphicon-collapse-up" aria-expanded="false"></span>'); 
-      }
-      else{      
-          $('#more').html('<span class="glyphicon glyphicon-collapse-down" aria-expanded="false"></span>'); 
-      }
-    }); 
+    //  $('#more').click(function () {
+    //   if($('button span').hasClass('glyphicon glyphicon-collapse-down')){
+    //       $('#more').html('<span class="glyphicon glyphicon-collapse-up" aria-expanded="false"></span>'); 
+    //   }
+    //   else{      
+    //       $('#more').html('<span class="glyphicon glyphicon-collapse-down" aria-expanded="false"></span>'); 
+    //   }
+    // }); 
 
     // $('#changeBottom').click(function () {
     //   if($('button span').hasClass('glyphicon glyphicon-collapse-down')){

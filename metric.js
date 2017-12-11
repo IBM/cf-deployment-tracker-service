@@ -6,8 +6,8 @@ module.exports = {
 		sentData(newData);
 		return newData;
 	},
-	listTop9Services: function(services, serviceCount){
-		return top9Services(services, serviceCount);
+	listTopServices: function(services, serviceCount){
+		return topServices(services, serviceCount);
 	},
 	sortItem: function(array){
 		array.sort(function(a, b) {
@@ -62,7 +62,7 @@ function sentData(data){
   });
  }
 
- function top9Services(services, serviceCount){
+ function topServices(services, serviceCount){
 	try{
 		services.sort(function(a, b) {
 		  if (parseInt(a.value) < parseInt(b.value)) {
@@ -73,15 +73,18 @@ function sentData(data){
 		  }
 		  return 0;
 		}).reverse();
-		var top9Count = 0;
+		var topCount = 0;
 		var temp = [];
-		for(var i = 0; i < 9; i++){
-		  top9Count+= parseInt(services[i].value);
+		for(var i = 0; i < 13; i++){
+		  if(services[i].key == 'null'){
+		  	continue;
+		  }
+		  topCount+= parseInt(services[i].value);
 		  temp.push(services[i]);
 		}
 		var others = {
 		      key: "Others",
-		      value: serviceCount - top9Count
+		      value: serviceCount - topCount
 		    };
 		temp.push(others);
 		services = temp;
