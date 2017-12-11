@@ -537,7 +537,7 @@ app.get("/stats/:hash", [forceSslIfNotLocal, authenticate()], function(req, res)
             "/stats/" +
             apps[url].url_hash +
             "/badge.svg";
-          apps[url].badgeMarkdown = "![Bluemix Deployments](" +
+          apps[url].badgeMarkdown = "![IBM Cloud Deployments](" +
             apps[url].badgeImageUrl +
             ")";
           apps[url].buttonImageUrl = protocolAndHost +
@@ -546,7 +546,7 @@ app.get("/stats/:hash", [forceSslIfNotLocal, authenticate()], function(req, res)
             "/button.svg";
           apps[url].buttonLinkUrl = "https://bluemix.net/deploy?repository=" +
             url;
-          apps[url].buttonMarkdown = "[![Deploy to Bluemix](" +
+          apps[url].buttonMarkdown = "[![Deploy to IBM Cloud](" +
             apps[url].buttonImageUrl +
             ")](" +
             apps[url].buttonLinkUrl +
