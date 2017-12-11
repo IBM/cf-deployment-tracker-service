@@ -232,7 +232,7 @@ app.get("/users", [forceSslIfNotLocal, authenticate()], function(req, res) {
           body['userGeo'].forEach(function(country){
             sum+=parseInt(country.value);
           })
-          var userGeo = metric.listTop9Services(body['userGeo'],sum);
+          var userGeo = metric.listTopServices(body['userGeo'],sum);
           res.render("users", {users: JSON.stringify(users), userGeo: JSON.stringify(userGeo)});
         }catch(ex){
         }
@@ -249,8 +249,10 @@ app.get("/bluemix", [forceSslIfNotLocal, authenticate()], function(req, res) {
         try{
           var bluemixOutput = body['servicesAllBluemix'];
           var cfBluemix = body['cfBluemix'];
+          var kubernetesBluemix = body['kubernetesBluemix'];
           res.render("bluemix", {dataTotal: JSON.stringify(bluemixOutput),
-                                  cfBluemix: JSON.stringify(cfBluemix)});
+                                  cfBluemix: JSON.stringify(cfBluemix),
+                                  kubernetesBluemix: JSON.stringify(kubernetesBluemix)});
         }catch(ex){
         }
       }
@@ -267,12 +269,14 @@ app.get("/graphs", [forceSslIfNotLocal, authenticate()], function(req, res) {
           var output = body['services'];
           var usage = body['usage'];
           var cloudfoundry = body['cloudfoundry'];
+          var kubernetes = body['kubernetes'];
           usage.forEach(function(service){
             service["key2"] = service.key.replace(/\s+/g, '');
           });
           res.render("graphs", {dataW: JSON.stringify(output),
                                 dataRaw: usage,
-                                cloudfoundry: JSON.stringify(cloudfoundry)});
+                                cloudfoundry: JSON.stringify(cloudfoundry),
+                                kubernetes: JSON.stringify(kubernetes)});
         }catch(ex){
         }
       }
@@ -388,10 +392,25 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
           }
         });
         var runtimes = Object.keys(runtime).map(function(key) {
-          return {key: key, value: runtime[key]};
+          return {key: key.replace(/\b\w/g, l => l.toUpperCase()), value: runtime[key]};
         });
+        var activeServices = {'conversation': 1, 'discovery': 1, 'natural language understanding': 1, 'tone analyzer': 1,
+                              'cloudant nosql db': 1, 'compose for mysql': 1, 'investment portfolio': 1, 'visual recognition': 1,
+                              'simulated instrument analytics': 1, 'speech to text': 1, 'compose for postgresql': 1,
+                              'internet of things platform': 1, 'predictive market scenarios': 1, 'weather company data for ibm bluemix': 1,
+                              'app id': 1, 'ibm push notifications': 1, 'object storage (v3)': 1, 'investment optimization': 1,
+                              'nodered': 1, 'continuous delivery': 1, 'real time payments': 1, 'portfolio optimization': 1, 
+                              'sendgrid': 1, 'instrument analytics': 1, 'compose for mongodb': 1, 'text to speech': 1, 
+                              'personality insights': 1, 'compose for redis': 1, 'secure gateway': 1, 'natural language classifier': 1,
+                              'language translator': 1, 'api connect': 1, 'apache spark': 1};
+        var deprecated = [];
 
-        var deprecated = ['weather company data', 'watson iot platform', 'object storage', 'push notifications','null'];
+        for(var deprecate in service){
+          if (! activeServices.hasOwnProperty(deprecate)){
+            deprecated.push(deprecate);
+          }
+        }
+
         for(var i = 0; i < deprecated.length; i++){
           delete service[deprecated[i]];
         }
@@ -400,12 +419,8 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
           return {key: key.replace(/\b\w/g, l => l.toUpperCase()), value: service[key]};
         });
         var languages = Object.keys(language).map(function(key) {
-          return {key: key, value: language[key]};
+          return {key: key.replace(/\b\w/g, l => l.toUpperCase()), value: language[key]};
         });
-        //List the top 9 services, and set the rest of the counts to "others"
-        // if(services.length > 9){
-        //   services = metric.listTop9Services(services,serviceCount);
-        // }
       //sort count for each app
         metric.sortItem(runtimes);
         metric.sortItem(services);

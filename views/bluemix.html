@@ -60,6 +60,14 @@
         <p style="font-size: 10px"> Note: 1G = 1 Billion</p>
     </figure>
      </div>
+    <div class="col-xs-12 col-md-12 col-lg-12">
+    <figure class="guide-example theme_light bg_light-tint">
+        <p class="type_mark" style="font-size: 30px">
+          Estimated Kubernetes usage (Instance hours) from IBM Code users.
+        </p>
+        <div id="k8vischart"></div>
+    </figure>
+   </div>
     <script src="/assets/jquery/dist/jquery.min.js"></script>
     <script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/assets/zeroclipboard/dist/ZeroClipboard.min.js"></script>
@@ -80,6 +88,7 @@
     //graphs
      var dataTotal = JSON.parse(htmlDecode("{{dataTotal}}"));
      var cfBluemix = JSON.parse(htmlDecode("{{cfBluemix}}"));
+     var kubernetes = JSON.parse(htmlDecode("{{kubernetesBluemix}}"));
      window.addEventListener('DOMContentLoaded', function () {
        // All Bluemix usage
        SimpleDataVis(dataTotal)
@@ -88,6 +97,12 @@
        SimpleDataVis(cfBluemix)
          .attr('type', 'stacked-bar-chart')
          .render('#cfbluemixvischart')
+       SimpleDataVis(kubernetes)
+         .attr('type', 'grouped-bar-chart')
+         .attr('tooltip', function (d) {
+          return d.key + ': ' + d.value 
+        })
+         .render('#k8vischart')
      })
     </script>
   </body>
