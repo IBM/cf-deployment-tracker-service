@@ -31,5 +31,7 @@
    "natural language classifier":1,
    "language translator":1,
    "api connect":1,
-   "apache spark":1
+   "apache spark":1,
+   "message hub":1,
+   "blockchain":1
 }
