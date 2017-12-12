@@ -4,7 +4,7 @@ Metrics Collector Service tracks deployments of sample workloads to IBM Cloud an
 
 ![Flow](images/metrics-service.png)
 
-> To enable tracking for your sample applications, follow [these instructions](https://github.com/IBM/metrics-collector-service#clients)
+> To enable tracking for your sample applications, follow [these instructions](#clients)
 
 [**_View a summary of deployments tracked._**](https://metrics-tracker.mybluemix.net/)
 
