@@ -241,6 +241,49 @@ app.get("/users", [forceSslIfNotLocal, authenticate()], function(req, res) {
     });
   });
 
+app.get("/chatbot", [forceSslIfNotLocal, authenticate()], function(req, res) {
+    var app = req.app;
+    var deploymentTrackerDb = app.get("deployment-tracker-db");
+    var eventsDb = deploymentTrackerDb.use("usagedata");
+    eventsDb.get('services',function (err, body) {
+      if(!err){
+        try{
+          var sum = 0;
+          body['chatbot'].forEach(function(botname){
+            sum+=parseInt(botname.value);
+          })
+          var chatbot = metric.listTopServices(body['chatbot'],sum);
+          res.render("chatbot", {chatbot: JSON.stringify(chatbot)});
+        }catch(ex){
+        }
+      }
+    });
+  });
+
+app.get("/chatbotjson", [forceSslIfNotLocal, authenticate()], function(req, res) {
+  var app = req.app;
+  var deploymentTrackerDb = app.get("deployment-tracker-db");
+
+  if (!deploymentTrackerDb) {
+    return res.status(500);
+  }
+
+  var eventsDb = deploymentTrackerDb.use("usagedata");
+  eventsDb.get('services',function (err, body) {
+      if(!err){
+        try{
+          var sum = 0;
+          body['chatbot'].forEach(function(botname){
+            sum+=parseInt(botname.value);
+          })
+          var chatbot = metric.listTopServices(body['chatbot'],sum);
+          res.json(body['chatbot']);
+        }catch(ex){
+        }
+      }
+    });
+});
+
 app.get("/bluemix", [forceSslIfNotLocal, authenticate()], function(req, res) {
     var app = req.app;
     var deploymentTrackerDb = app.get("deployment-tracker-db");
