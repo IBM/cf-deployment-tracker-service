@@ -41,31 +41,20 @@
       </div>
     </div>
     </div>
-    <div class="col-xs-12 col-md-12 col-lg-12">
+    <p style="text-align:center;">
+    <button class="btn btn-success btn-lg" id="service_button">Service Usage Graph</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <button class="btn btn-info btn-lg" id="cf_button">Cloud Foundry Usage Graph</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <button class="btn btn-info btn-lg" id="k8s_button">Kubernetes Usage Graph</button>
+    </p>
+    <div class="col-xs-12 col-md-12 col-lg-12" id="graph">
     <figure class="guide-example theme_light bg_light-tint">
         <p class="type_mark" style="font-size: 30px">
           API calls from all IBM Cloud users. 
         </p>
         <div id="datatotalvischart"></div>
         <p style="font-size: 10px"> Note: 1G = 1 Billion</p>
-    </figure>
-     </div>
-    <div class="col-xs-12 col-md-12 col-lg-12">
-    <figure class="guide-example theme_light bg_light-tint">
-        <p class="type_mark" style="font-size: 30px">
-          Cloud Foundry usage (GB per hour) from all IBM Cloud users. <br>
-          (Python, Go, PHP, Ruby, and Tomcat are Community Buildpacks) 
-        </p>
-        <div id="cfbluemixvischart"></div>
-        <p style="font-size: 10px"> Note: 1G = 1 Billion</p>
-    </figure>
-     </div>
-    <div class="col-xs-12 col-md-12 col-lg-12">
-    <figure class="guide-example theme_light bg_light-tint">
-        <p class="type_mark" style="font-size: 30px">
-          Estimated Kubernetes usage (Instance hours) from IBM Code users.
-        </p>
-        <div id="k8vischart"></div>
     </figure>
    </div>
     <script src="/assets/jquery/dist/jquery.min.js"></script>
@@ -94,16 +83,83 @@
        SimpleDataVis(dataTotal)
          .attr('type', 'stacked-bar-chart')
          .render('#datatotalvischart')
+     })
+     // Journey user usage
+     document.getElementById("service_button").addEventListener("click", function () {
+        document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
+                                                      "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
+                                                      "Estimated API calls from IBM Code users. " +
+                                                      "<div id=\"datavischart\"></div> " +
+                                                      "</figure>";
+        SimpleDataVis(dataTotal)
+         .attr('type', 'stacked-bar-chart')
+         .render('#datavischart')
+     });
+     //  Cloudfoundry Runtime
+     document.getElementById("cf_button").addEventListener("click", function () {
+        document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
+                                                      "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
+                                                      "Estimated Cloud Foundry usage (GB per hour) from IBM Code users. <br> " +
+                                                      "(Python, Go, PHP, Ruby, and Tomcat are Community Buildpacks)" +
+                                                      "<div id=\"cfvischart\"></div> " +
+                                                      "</figure>";
        SimpleDataVis(cfBluemix)
          .attr('type', 'stacked-bar-chart')
-         .render('#cfbluemixvischart')
+         .render('#cfvischart')
+     });
+     //  Kubernetes Runtime
+     document.getElementById("k8s_button").addEventListener("click", function () {
+        document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
+                                                      "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
+                                                      "Estimated Kubernetes usage (Instance hours) from IBM Code users. " +
+                                                      "<div id=\"k8vischart\"></div> " +
+                                                      "</figure>";
        SimpleDataVis(kubernetes)
-         .attr('type', 'grouped-bar-chart')
-         .attr('tooltip', function (d) {
-          return d.key + ': ' + d.value 
-        })
+         .attr('type', 'stacked-bar-chart')
          .render('#k8vischart')
-     })
+     });
+    $('#service_button').click(function () {
+      if($('#service_button').hasClass('btn-success')){
+        }else if($('#cf_button').hasClass('btn-success')){
+        $('#service_button').toggleClass("btn-info");
+        $('#service_button').toggleClass("btn-success");
+        $('#cf_button').toggleClass("btn-info");
+        $('#cf_button').toggleClass("btn-success");
+      }else{
+        $('#service_button').toggleClass("btn-info");
+        $('#service_button').toggleClass("btn-success");
+        $('#k8s_button').toggleClass("btn-info");
+        $('#k8s_button').toggleClass("btn-success");
+     }
+     });
+    $('#cf_button').click(function () {
+      if($('#cf_button').hasClass('btn-success')){
+        }else if($('#service_button').hasClass('btn-success')){
+        $('#service_button').toggleClass("btn-info");
+        $('#service_button').toggleClass("btn-success");
+        $('#cf_button').toggleClass("btn-info");
+        $('#cf_button').toggleClass("btn-success");
+      }else{
+        $('#cf_button').toggleClass("btn-info");
+        $('#cf_button').toggleClass("btn-success");
+        $('#k8s_button').toggleClass("btn-info");
+        $('#k8s_button').toggleClass("btn-success");
+     }
+     });
+    $('#k8s_button').click(function () {
+      if($('#k8s_button').hasClass('btn-success')){
+        }else if($('#cf_button').hasClass('btn-success')){
+        $('#k8s_button').toggleClass("btn-info");
+        $('#k8s_button').toggleClass("btn-success");
+        $('#cf_button').toggleClass("btn-info");
+        $('#cf_button').toggleClass("btn-success");
+      }else{
+        $('#service_button').toggleClass("btn-info");
+        $('#service_button').toggleClass("btn-success");
+        $('#k8s_button').toggleClass("btn-info");
+        $('#k8s_button').toggleClass("btn-success");
+     }
+     });
     </script>
   </body>
 </html>
