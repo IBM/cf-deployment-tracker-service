@@ -88,7 +88,7 @@
      document.getElementById("service_button").addEventListener("click", function () {
         document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
-                                                      "Estimated API calls from IBM Code users. " +
+                                                      "API calls from all IBM Cloud users. " +
                                                       "<div id=\"datavischart\"></div> " +
                                                       "<p style=\"font-size: 10px\"> Note: 1G = 1 Billion</p>" + 
                                                       "</figure>";
@@ -100,7 +100,7 @@
      document.getElementById("cf_button").addEventListener("click", function () {
         document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
-                                                      "Estimated Cloud Foundry usage (GB per hour) from IBM Code users. <br> " +
+                                                      "Cloud Foundry usage (GB per hour) all IBM Cloud users. <br> " +
                                                       "(Python, Go, PHP, Ruby, and Tomcat are Community Buildpacks)" +
                                                       "<div id=\"cfvischart\"></div> " +
                                                       "<p style=\"font-size: 10px\"> Note: 1G = 1 Billion</p>" + 
@@ -113,7 +113,7 @@
      document.getElementById("k8s_button").addEventListener("click", function () {
         document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
-                                                      "Estimated Kubernetes usage (Instance hours) from IBM Code users. " +
+                                                      "Kubernetes usage (Instance hours) from all IBM Cloud users. " +
                                                       "<div id=\"k8vischart\"></div> " +
                                                       "</figure>";
        SimpleDataVis(kubernetes)

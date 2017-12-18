@@ -391,7 +391,7 @@ app.get("/company/:hash/:service", [forceSslIfNotLocal, authenticate()], functio
           });
           res.render("company_service", {dataU: JSON.stringify(usagePerUnit),
                                 dataRaw: perUnit, service: serviceTitle,
-                                company: companyTitle});
+                                company: companyTitle, companyHash: hash});
         }catch(ex){
         }
       }
@@ -402,6 +402,7 @@ app.get("/company/:hash", [forceSslIfNotLocal, authenticate()], function(req, re
     var app = req.app;
     var hash = req.params.hash;
     var companyTitle = '';
+    var companyHash = '';
     var deploymentTrackerDb = app.get("deployment-tracker-db");
     var eventsDb = deploymentTrackerDb.use("usagedata");
     var cloudfoundry = [];
@@ -423,7 +424,7 @@ app.get("/company/:hash", [forceSslIfNotLocal, authenticate()], function(req, re
               if(usage != null){
               usage.forEach(function(service){
                 service["key2"] = service.key.replace(/\s+/g, '');
-                service["company"] = companyTitle;
+                service["company"] = companyTitle.replace(/\s+/g, '');
                 });
               }else{
                 usage = [];
