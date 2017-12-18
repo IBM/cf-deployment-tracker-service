@@ -122,6 +122,12 @@
      });
      //  Kubernetes Runtime
      document.getElementById("k8s_button").addEventListener("click", function () {
+      if(kubernetes.length < 1){
+        document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
+                                                      "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
+                                                      "Kubernetes usage from {{company}} is not available. " +
+                                                      "</figure>";
+      }else{
         document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
                                                       "Estimated Kubernetes usage (Instance hours) from {{company}}. " +
@@ -130,6 +136,7 @@
        SimpleDataVis(kubernetes)
          .attr('type', 'stacked-bar-chart')
          .render('#k8vischart')
+       }
      });
     $('#service_button').click(function () {
       if($('#service_button').hasClass('btn-success')){
