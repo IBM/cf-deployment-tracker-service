@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>IBM Code Metrics Platform</title>
+    <link rel="stylesheet" type="text/css" href="/css/demo.css">
     <link rel="stylesheet" href="/assets/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/assets/bootstrap/dist/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" type="text/css" href="/css/demo.css">
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="/js/simpledatavis.js"></script>
     <script type="text/javascript" src="/js/vis/simpledatavis-barchart.js"></script>
@@ -34,14 +34,12 @@
     <article>         
       <ol class="breadcrumb">
           <li><a href="/stats">Stats</a></li>
-          <li><a href="/graphs">Graphs</a></li>
-          <li class="active">IBM Cloud (IBM Cloud Statistics)</li>
+          <li class="active">Company Statistics</li>
         </ol>
     </article>
       </div>
     </div>
-    </div>
-    <p style="text-align:center;">
+    <p style="text-align:center;" id="graph_button">
     <button class="btn btn-success btn-lg" id="service_button">Service Usage Graph</button>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <button class="btn btn-info btn-lg" id="cf_button">Cloud Foundry Usage Graph</button>
@@ -51,12 +49,26 @@
     <div class="col-xs-12 col-md-12 col-lg-12" id="graph">
     <figure class="guide-example theme_light bg_light-tint">
         <p class="type_mark" style="font-size: 30px">
-          API calls from all IBM Cloud users. 
-        </p>
-        <div id="datatotalvischart"></div>
-        <p style="font-size: 10px"> Note: 1G = 1 Billion</p>
+          {{company}}'s Estimated Service Usage. 
+        <div id="datavischart"></div>
     </figure>
    </div>
+  <div class="col-xs-12 col-md-12 col-lg-12">
+    <h2>&nbsp;&nbsp;&nbsp;&nbsp;Usage from {{company}} for Each Service
+<!--   <button type="button" class="btn btn-info" data-target="#expand" id ="more"> <span class="glyphicon glyphicon-collapse-down" aria-expanded="false"></span></button> -->
+   </h2>
+  </div>
+  <div id="expand" class="collapse in">
+    {{#each dataRaw}}
+    <div class="col-xs-6 col-md-6 col-lg-6">
+      <figure class="guide-example theme_light bg_light-tint">
+             <p class="type_mark" style="font-size: 25px; color: gray; font-weight: bold;"><a href="/company/{{company}}/{{key2}}">
+              {{key}}
+            </a><span class="badge">{{value}}</span></p>
+      </figure>
+    </div>
+    {{/each}}
+  </div>
     <script src="/assets/jquery/dist/jquery.min.js"></script>
     <script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/assets/zeroclipboard/dist/ZeroClipboard.min.js"></script>
@@ -75,24 +87,23 @@
       return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
     }
     //graphs
-     var dataTotal = JSON.parse(htmlDecode("{{dataTotal}}"));
-     var cfBluemix = JSON.parse(htmlDecode("{{cfBluemix}}"));
-     var kubernetes = JSON.parse(htmlDecode("{{kubernetesBluemix}}"));
+     var dataW = JSON.parse(htmlDecode("{{dataW}}"));
+     var cloudfoundry = JSON.parse(htmlDecode("{{cloudfoundry}}"));
+     var kubernetes = JSON.parse(htmlDecode("{{kubernetes}}"));
      window.addEventListener('DOMContentLoaded', function () {
-       // All Bluemix usage
-       SimpleDataVis(dataTotal)
+      // Journey user usage
+       SimpleDataVis(dataW)
          .attr('type', 'stacked-bar-chart')
-         .render('#datatotalvischart')
+         .render('#datavischart')
      })
      // Journey user usage
      document.getElementById("service_button").addEventListener("click", function () {
         document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
-                                                      "Estimated API calls from IBM Code users. " +
+                                                      "{{company}}'s Estimated Service Usage. " +
                                                       "<div id=\"datavischart\"></div> " +
-                                                      "<p style=\"font-size: 10px\"> Note: 1G = 1 Billion</p>" + 
                                                       "</figure>";
-        SimpleDataVis(dataTotal)
+        SimpleDataVis(dataW)
          .attr('type', 'stacked-bar-chart')
          .render('#datavischart')
      });
@@ -100,20 +111,20 @@
      document.getElementById("cf_button").addEventListener("click", function () {
         document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
-                                                      "Estimated Cloud Foundry usage (GB per hour) from IBM Code users. <br> " +
+                                                      "Estimated Cloud Foundry usage (GB per hour) from {{company}}. <br> " +
                                                       "(Python, Go, PHP, Ruby, and Tomcat are Community Buildpacks)" +
                                                       "<div id=\"cfvischart\"></div> " +
-                                                      "<p style=\"font-size: 10px\"> Note: 1G = 1 Billion</p>" + 
                                                       "</figure>";
-       SimpleDataVis(cfBluemix)
+       SimpleDataVis(cloudfoundry)
          .attr('type', 'stacked-bar-chart')
          .render('#cfvischart')
+
      });
      //  Kubernetes Runtime
      document.getElementById("k8s_button").addEventListener("click", function () {
         document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
-                                                      "Estimated Kubernetes usage (Instance hours) from IBM Code users. " +
+                                                      "Estimated Kubernetes usage (Instance hours) from {{company}}. " +
                                                       "<div id=\"k8vischart\"></div> " +
                                                       "</figure>";
        SimpleDataVis(kubernetes)

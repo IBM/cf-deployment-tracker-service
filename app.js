@@ -338,7 +338,6 @@ app.get("/graphs/:hash", [forceSslIfNotLocal, authenticate()], function(req, res
     eventsDb.get('services',function (err, body) {
       if(!err){
         try{
-          var output = body['services'];
           var usageperservice = body['usagePerService'];
           usageperservice.forEach(function(service){
             service["key2"] = service.key.replace(/\s+/g, '');
@@ -352,6 +351,88 @@ app.get("/graphs/:hash", [forceSslIfNotLocal, authenticate()], function(req, res
           });
           res.render("service", {dataU: JSON.stringify(usagePerUnit),
                                 dataRaw: perUnit, service: serviceTitle});
+        }catch(ex){
+        }
+      }
+    });
+  });
+
+app.get("/company/:hash/:service", [forceSslIfNotLocal, authenticate()], function(req, res) {
+    var app = req.app;
+    var hash = req.params.hash;
+    var comService = req.params.service;
+    var serviceTitle = '';
+    var companyTitle = '';
+    var deploymentTrackerDb = app.get("deployment-tracker-db");
+    var eventsDb = deploymentTrackerDb.use("usagedata");
+    var usage = [];
+    var usagePerUnit = [];
+    var perUnit = [];
+    eventsDb.get('services',function (err, body) {
+      if(!err){
+        try{
+          var companies = body['companyData'];
+          Object.keys(companies).map(function(company){
+            var companyKey = company.replace(/\s+/g, '');
+            if(hash == companyKey){
+              companyTitle = String(company);
+              usage = companies[company]["serviceUnit"];
+              usage.forEach(function(service){
+                var serviceName = service.key.replace(/\s+/g, '');
+                if(comService == serviceName){
+                  serviceTitle = String(service.key);
+                  usagePerUnit = service.value;
+                  perUnit = Object.keys(usagePerUnit).map(function(key) {
+                    return {key: key, value: usagePerUnit[key]};
+                  });
+                }
+              });
+            }
+          });
+          res.render("company_service", {dataU: JSON.stringify(usagePerUnit),
+                                dataRaw: perUnit, service: serviceTitle,
+                                company: companyTitle});
+        }catch(ex){
+        }
+      }
+    });
+  });
+
+app.get("/company/:hash", [forceSslIfNotLocal, authenticate()], function(req, res) {
+    var app = req.app;
+    var hash = req.params.hash;
+    var companyTitle = '';
+    var deploymentTrackerDb = app.get("deployment-tracker-db");
+    var eventsDb = deploymentTrackerDb.use("usagedata");
+    var cloudfoundry = [];
+    var kubernetes = [];
+    var services = [];
+    var usage = {};
+    eventsDb.get('services',function (err, body) {
+      if(!err){
+        try{
+          var companies = body['companyData'];
+          Object.keys(companies).map(function(company) {
+            var companyKey = company.replace(/\s+/g, '').toLowerCase();
+            if(hash.toLowerCase() == companyKey){
+              companyTitle = String(company);
+              cloudfoundry = companies[company]["cf"];
+              kubernetes = companies[company]["k8s"];
+              services = companies[company]["services"];
+              usage = companies[company]["usage"];
+              if(usage != null){
+              usage.forEach(function(service){
+                service["key2"] = service.key.replace(/\s+/g, '');
+                service["company"] = companyTitle;
+                });
+              }else{
+                usage = [];
+              }
+            }
+          });
+          res.render("company", {cloudfoundry: JSON.stringify(cloudfoundry), kubernetes: JSON.stringify(kubernetes), 
+                                dataRaw: usage,
+                                dataW: JSON.stringify(services), company: companyTitle});
         }catch(ex){
         }
       }
