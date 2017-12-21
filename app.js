@@ -444,8 +444,7 @@ app.get("/", forceSslIfNotLocal, function(req, res) {
     res.render("index");
    });
 
-// Get metrics overview
-app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
+function getStatsPage(req,res){
   var app = req.app;
   var deploymentTrackerDb = app.get("deployment-tracker-db");
   if (!deploymentTrackerDb) {
@@ -581,12 +580,34 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
           var item = {"key": key, "value" : value};
           data.push(item);
         }
-        res.render("stats", {data: JSON.stringify(data), apps: appsSortedByCount, 
+        var renderJson = {data: JSON.stringify(data), apps: appsSortedByCount, 
           services: JSON.stringify(services), runtimes: JSON.stringify(runtimes),
-          languages: JSON.stringify(languages)});
+          languages: JSON.stringify(languages)};
+        res.render("stats", renderJson);
+        if (!appEnv.isLocal) {
+          sessionStore.client.setex("statsPage", 900, JSON.stringify(renderJson));
+        }
       });
     });
    });
+  }
+
+// Get metrics overview
+app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
+  // Cache using Redis
+  if (!appEnv.isLocal) {
+    sessionStore.client.get("statsPage", function (err, result) {
+      if (err || !result) {
+        getStatsPage(req,res);
+      }
+      else {
+        res.render("stats", JSON.parse(result));
+      }
+    });
+  }
+  else {
+    getStatsPage(req,res);
+  }
  });
 
 // Get CSV of metrics overview
