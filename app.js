@@ -21,7 +21,7 @@ var express = require("express"),
     forceSSL = require("express-force-ssl"),
     async = require("async"),
     metric = require('./metric'),
-    fs = require("fs");;
+    fs = require("fs");
 
 
 dotenv.load();
