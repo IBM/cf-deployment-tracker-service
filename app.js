@@ -1086,7 +1086,7 @@ app.engine("xml", hbs.__express);
 app.use(express.static(path.join(__dirname, "public")));
 
 // Create the HTTP server
-http.createServer(app).listen(appEnv.port, appEnv.bind, function() {
+http.createServer(app).listen(appEnv.port, '0.0.0.0', function() {
     console.log("server starting on " + appEnv.url);
 });
 //-------------------------------------------------------------------------------
