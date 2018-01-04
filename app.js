@@ -25,7 +25,7 @@ var express = require("express"),
 
 var appEnv = cfenv.getAppEnv();
 
-if (appEnv.isLocal) { 
+if (appEnv.isLocal) {
     dotenv.load();
 }
 
@@ -91,9 +91,9 @@ function authenticate() {
 
         if (!request.isAuthenticated() || request.session.passport.user === undefined) {
             response.redirect("/auth/sso");
-            return ;
+            return;
         }
-        
+
         var email = request.session.passport.user.id,
             ibmer = false;
 
@@ -104,7 +104,7 @@ function authenticate() {
             response.render("error", {
                 message: "You must be an IBM'er to use this app"
             });
-        }else{
+        } else {
             return next();
         }
     };
@@ -839,11 +839,11 @@ app.get("/stats/:hash/badge.svg", forceSslIfNotLocal, function(req, res) {
         "Expires": 0
     });
     if (appEnv.isLocal) {
-        generateBadge(req,res);
-    }else{
+        generateBadge(req, res);
+    } else {
         sessionStore.client.get("badge-" + hash, function(err, result) {
             if (err || !result) {
-                generateBadge(req,res);
+                generateBadge(req, res);
             } else {
                 res.render("badge.xml", JSON.parse(result));
             }
@@ -861,7 +861,7 @@ function generateBadge(req, res) {
     var eventsDb = deploymentTrackerDb.use("events"),
         hash = req.params.hash;
 
-        eventsDb.view("deployments", "by_repo_hash_unique", {
+    eventsDb.view("deployments", "by_repo_hash_unique", {
         startkey: [hash],
         endkey: [hash, {}, {}, {}, {}],
         group_level: 5
@@ -893,13 +893,13 @@ app.get("/stats/:hash/button.svg", forceSslIfNotLocal, function(req, res) {
         "Expires": 0
     });
     if (appEnv.isLocal) {
-        generateButton(req,res);
-    }else{
+        generateButton(req, res);
+    } else {
         sessionStore.client.get("button-" + hash, function(err, result) {
             if (err || !result) {
-                generateButton(req,res);
+                generateButton(req, res);
             } else {
-            res.render("button.xml", JSON.parse(result));
+                res.render("button.xml", JSON.parse(result));
             }
         });
     }
@@ -934,7 +934,7 @@ function generateButton(req, res) {
         svgData.leftX = svgData.leftX + 48;
         svgData.rightX = svgData.rightX + 48;
         // If the app is on CF, cache the button data with Redis
-        if (!appEnv.isLocal) { 
+        if (!appEnv.isLocal) {
             sessionStore.client.setex("button-" + hash, 300, JSON.stringify(svgData));
         }
         res.render("button.xml", svgData);
