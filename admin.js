@@ -6,13 +6,18 @@ var express = require("express"),
     path = require("path"),
     cloudant = require("cloudant"),
     program = require("commander"),
+    cfenv = require("cfenv"),
     dotenv = require("dotenv"),
     crypto = require("crypto"),
     pkg = require(path.join(__dirname, "package.json"));
 
 http.post = require("http-post");
 
-dotenv.load();
+var appEnv = cfenv.getAppEnv();
+
+if (appEnv.isLocal) { 
+    dotenv.load();
+}
 
 var app = express();
 
@@ -289,7 +294,6 @@ program
   .command("track")
   .description("Track application deployments")
   .action(function() {
-    require("cf-deployment-tracker-client").track();
   }).on("--help", function() {
     console.log("  Examples:");
     console.log();
