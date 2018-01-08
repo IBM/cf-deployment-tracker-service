@@ -832,26 +832,6 @@ app.get("/stats/:hash", [forceSslIfNotLocal, authenticate()], function(req, res)
 
 // Get badge of metrics for a specific repo
 app.get("/stats/:hash/badge.svg", forceSslIfNotLocal, function(req, res) {
-    var hash = req.params.hash;
-    res.set({
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "no-cache",
-        "Expires": 0
-    });
-    if (appEnv.isLocal) {
-        generateBadge(req, res);
-    } else {
-        sessionStore.client.get("badge-" + hash, function(err, result) {
-            if (err || !result) {
-                generateBadge(req, res);
-            } else {
-                res.render("badge.xml", JSON.parse(result));
-            }
-        });
-    }
-});
-
-function generateBadge(req, res) {
     var app = req.app,
         deploymentTrackerDb = app.get("deployment-tracker-db");
 
@@ -861,12 +841,14 @@ function generateBadge(req, res) {
     var eventsDb = deploymentTrackerDb.use("events"),
         hash = req.params.hash;
 
+    //TODO: Consider caching this data with Redis
     eventsDb.view("deployments", "by_repo_hash_unique", {
         startkey: [hash],
         endkey: [hash, {}, {}, {}, {}],
         group_level: 5
     }, function(err, body) {
         var count = body.rows.length;
+        //TODO: Rename this variable
         var svgData = {
             left: "IBM Cloud Deployments",
             right: count.toString(),
@@ -876,36 +858,17 @@ function generateBadge(req, res) {
         svgData.totalWidth = svgData.leftWidth + svgData.rightWidth;
         svgData.leftX = svgData.leftWidth / 2 + 1;
         svgData.rightX = svgData.leftWidth + svgData.rightWidth / 2 - 1;
-        // If the app is on CF, cache the button data with Redis
-        if (!appEnv.isLocal) {
-            sessionStore.client.setex("badge-" + hash, 300, JSON.stringify(svgData));
-        }
+        res.set({
+            "Content-Type": "image/svg+xml",
+            "Cache-Control": "no-cache",
+            "Expires": 0
+        });
         res.render("badge.xml", svgData);
     });
-}
+});
 
 // Get a "Deploy to IBM Cloud" button for a specific repo
 app.get("/stats/:hash/button.svg", forceSslIfNotLocal, function(req, res) {
-    var hash = req.params.hash;
-    res.set({
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "no-cache",
-        "Expires": 0
-    });
-    if (appEnv.isLocal) {
-        generateButton(req, res);
-    } else {
-        sessionStore.client.get("button-" + hash, function(err, result) {
-            if (err || !result) {
-                generateButton(req, res);
-            } else {
-                res.render("button.xml", JSON.parse(result));
-            }
-        });
-    }
-});
-
-function generateButton(req, res) {
     var app = req.app,
         deploymentTrackerDb = app.get("deployment-tracker-db");
 
@@ -914,12 +877,15 @@ function generateButton(req, res) {
     }
     var eventsDb = deploymentTrackerDb.use("events"),
         hash = req.params.hash;
+
+    //TODO: Consider caching this data with Redis
     eventsDb.view("deployments", "by_repo_hash_unique", {
         startkey: [hash],
         endkey: [hash, {}, {}, {}, {}],
         group_level: 5
     }, function(err, body) {
         var count = body.rows.length;
+        //TODO: Rename this variable
         var svgData = {
             left: "Deploy to IBM Cloud",
             right: count.toString(),
@@ -933,13 +899,15 @@ function generateButton(req, res) {
         svgData.totalWidth = svgData.totalWidth + 48;
         svgData.leftX = svgData.leftX + 48;
         svgData.rightX = svgData.rightX + 48;
-        // If the app is on CF, cache the button data with Redis
-        if (!appEnv.isLocal) {
-            sessionStore.client.setex("button-" + hash, 300, JSON.stringify(svgData));
-        }
+        res.set({
+            "Content-Type": "image/svg+xml",
+            "Cache-Control": "no-cache",
+            "Expires": 0
+        });
         res.render("button.xml", svgData);
     });
-}
+});
+
 
 function track(req, res) {
     var app = req.app;
