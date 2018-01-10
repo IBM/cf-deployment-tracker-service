@@ -245,7 +245,6 @@ app.get("/users", [forceSslIfNotLocal, authenticate()], function(req, res) {
         if (!err) {
             try {
                 var users = body['users'];
-                // var revenue = body['serviceCost'];
                 var sum = 0;
                 body['userGeo'].forEach(function(country) {
                     sum += parseInt(country.value);
@@ -533,7 +532,6 @@ function getStatsPage(req, res) {
             var runtime = {};
             var service = {};
             var language = {};
-            // var serviceCount = 0;
             body2.rows.map(function(row) {
                 var item = row.key[0];
                 if (item != null) {
@@ -579,7 +577,6 @@ function getStatsPage(req, res) {
                 delete service[deprecated[i]];
             }
             var services = Object.keys(service).map(function(key) {
-                // serviceCount += 1;
                 return {
                     key: key.replace(/\b\w/g, l => l.toUpperCase()),
                     value: service[key]
@@ -666,29 +663,6 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
         getStatsPage(req, res);
     }
 });
-
-// Get CSV of metrics overview
-// app.get("/stats.csv", forceSslIfNotLocal, function(req, res) {
-//   var app = req.app;
-//   var deploymentTrackerDb = app.get("deployment-tracker-db");
-//   if (!deploymentTrackerDb) {
-//     return res.status(500);
-//   }
-//   var eventsDb = deploymentTrackerDb.use("events");
-//   eventsDb.view("deployments", "by_repo", {group_level: 3}, function(err, body) {
-//     var apps = [
-//       ["URL", "Year", "Month", "Deployments"]
-//     ];
-//     body.rows.map(function(row) {
-//       var url = row.key[0];
-//       var year = row.key[1];
-//       var month = row.key[2];
-//       var count = row.value;
-//       apps.push([url, year, month, count]);
-//     });
-//     res.csv(apps);
-//   });
-// });
 
 // Get JSON of metrics overview
 app.get("/repos", [forceSslIfNotLocal, authenticate()], function(req, res) {
@@ -807,28 +781,6 @@ app.get("/stats/:hash", [forceSslIfNotLocal, authenticate()], function(req, res)
         });
     });
 });
-
-// Public API to get metrics for a specific repo
-// app.get("/stats/:hash/metrics.json", forceSslIfNotLocal, function(req, res) {
-//   var app = req.app,
-//     deploymentTrackerDb = app.get("deployment-tracker-db");
-
-//   if (!deploymentTrackerDb) {
-//     return res.status(500);
-//   }
-//   var eventsDb = deploymentTrackerDb.use("events"),
-//    hash = req.params.hash;
-
-//   //TODO: Consider caching this data with Redis
-//   eventsDb.view("deployments", "by_repo_hash",
-//     {startkey: [hash], endkey: [hash, {}, {}, {}, {}, {}, {}], group_level: 1}, function(err, body) {
-//     var appStats = {
-//       url_hash: hash,
-//       count: body.rows[0].value
-//     };
-//     res.json(appStats);
-//   });
-// });
 
 // Get badge of metrics for a specific repo
 app.get("/stats/:hash/badge.svg", forceSslIfNotLocal, function(req, res) {
@@ -1024,6 +976,7 @@ function track(req, res) {
     var kube = {};
     if (req.body.clusterid) kube.cluster_id = req.body.clusterid;
     if (req.body.customerid) kube.customer_id = req.body.customerid;
+    if (req.body.ow_action_name) ow_action_name = req.body.ow_action_name;
     //Sent data to Segment
     metric.sentAnalytic(event, req.body.config, provider, kube);
     if (provider) event.provider = provider;

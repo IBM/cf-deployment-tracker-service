@@ -20,6 +20,7 @@ Get the project and change into the project directory:
 Local configuration is done through a `.env` file. One environment variable, `VCAP_SERVICES`, is needed in order to configure your local development environment. The value of the `VCAP_SERVICES` is a string representation of a JSON object. Here is an example `.env` file:
 
     VCAP_SERVICES={"cloudantNoSQLDB": [{"name": "deployment-tracker-db","label": "cloudantNoSQLDB","plan": "Lite","credentials": {"username": "your-username","password": "your-password","host": "your-host","port": 443,"url": "https://your-username:your-password@your-host"}}]}
+    WRITE_KEY="Your Segment Write Key"
 
 **Note:**  Services created within IBM Cloud are automatically added to the `VCAP_SERVICES` environment variable. Therefore, no configuration is needed for IBM Cloud.
 
