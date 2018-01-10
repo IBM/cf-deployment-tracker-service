@@ -17,7 +17,7 @@ Get the project and change into the project directory:
 
 ## Configuring Local Development
 
-Local configuration is done through a `.env` file. One environment variable, `VCAP_SERVICES`, is needed in order to configure your local development environment. The value of the `VCAP_SERVICES` is a string representation of a JSON object. Here is an example `.env` file:
+Local configuration is done through a `.env` file. Two environment variables, `VCAP_SERVICES` and `WRITE_KEY`, are needed in order to configure your local development environment. The value of the `VCAP_SERVICES` is a string representation of a JSON object, and `WRITE_KEY` is the Segment Write Key in string format. Here is an example `.env` file:
 
     VCAP_SERVICES={"cloudantNoSQLDB": [{"name": "deployment-tracker-db","label": "cloudantNoSQLDB","plan": "Lite","credentials": {"username": "your-username","password": "your-password","host": "your-host","port": 443,"url": "https://your-username:your-password@your-host"}}]}
     WRITE_KEY="Your Segment Write Key"
@@ -67,7 +67,6 @@ There are a number of language and platform specific clients for the deployment 
 - [Node.js](https://github.com/IBM/metrics-collector-client-node)
 - [Python](https://github.com/IBM/metrics-collector-client-python)
 - [Java](https://github.com/IBM/metrics-collector-client-java)
-- [Go](https://github.com/IBM/metrics-collector_client_go)
 - [Swift](https://github.com/metrics-collector-client-swift)
 - [Kubernetes](https://github.com/IBM/metrics-collector-client-kubernetes)
 
