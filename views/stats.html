@@ -15,7 +15,6 @@
     <script type="text/javascript" src="/js/vis/simpledatavis-piechart.js"></script>
     <script type="text/javascript" src="/js/vis/simpledatavis-rangebarchart.js"></script>
     <script type="text/javascript">
-
     function htmlDecode(input){
       var e = document.createElement('div');
       e.innerHTML = input;
@@ -119,8 +118,8 @@
         <h2>
           {{#if url}}
             {{#if is_url}}
-              <a href="{{url}}" target="_blank">{{url}}</a>
-              {{else}}{{url}}
+              {{inc @index}}. <a href="{{url}}" target="_blank">{{url}}</a>
+              {{else}}{{inc @index}}. {{url}}
             {{/if}}
           {{else}}
             <em>No repository URL</em>

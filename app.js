@@ -495,31 +495,33 @@ function getStatsPage(req, res) {
             var url = row.key[0];
             var year = row.key[1];
             var month = row.key[2];
-            if (!(url in apps)) {
-                apps[url] = {
-                    url: url,
-                    count: 0,
-                    deploys: []
-                };
-                if (url) {
-                    apps[url].url_hash = crypto.createHash("md5").update(url).digest("hex");
+            if(url.includes("https://github.com/") || url.includes("http://github.com/")){
+                if (!(url in apps)) {
+                    apps[url] = {
+                        url: url,
+                        count: 0,
+                        deploys: []
+                    };
+                    if (url) {
+                        apps[url].url_hash = crypto.createHash("md5").update(url).digest("hex");
+                    }
                 }
-            }
-            if (validator.isURL(url, {
-                    protocols: ["http", "https"],
-                    require_protocol: true
-                })) {
-                apps[url].is_url = true;
-            }
-            if (!(year in apps[url].deploys)) {
-                apps[url].deploys[year] = {};
-            }
-            if (!(month in apps[url].deploys[year])) {
-                apps[url].deploys[year][month] = 1;
-                apps[url].count += 1;
-            } else {
-                apps[url].deploys[year][month] += 1;
-                apps[url].count += 1;
+                if (validator.isURL(url, {
+                        protocols: ["http", "https"],
+                        require_protocol: true
+                    })) {
+                    apps[url].is_url = true;
+                }
+                if (!(year in apps[url].deploys)) {
+                    apps[url].deploys[year] = {};
+                }
+                if (!(month in apps[url].deploys[year])) {
+                    apps[url].deploys[year][month] = 1;
+                    apps[url].count += 1;
+                } else {
+                    apps[url].deploys[year][month] += 1;
+                    apps[url].count += 1;
+                }
             }
         });
 
@@ -1034,6 +1036,11 @@ app.get("/robots.txt", function(request, response) {
 });
 
 // Set the view engine
+hbs.handlebars.registerHelper("inc", function(value, options)
+{
+    return parseInt(value) + 1;
+});
+
 app.set("view engine", "html");
 app.engine("html", hbs.__express);
 app.engine("xml", hbs.__express);
