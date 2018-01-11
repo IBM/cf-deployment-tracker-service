@@ -208,34 +208,6 @@ var urlEncodedParser = bodyParser.urlencoded({
     }),
     jsonParser = bodyParser.json();
 
-function getStats(repo, callback) {
-    var baseURL = "https://github-stats.mybluemix.net/api/v1/stats";
-
-    if (GITHUB_STATS_API_KEY === "") {
-        callback(null, null);
-        return;
-    }
-
-    var url = baseURL + "?apiKey=" + GITHUB_STATS_API_KEY + "&repo=" + repo;
-
-    if (!appEnv.isLocal) {
-        sessionStore.client.get("repo-" + repo, function(err, result) {
-            if (err || !result) {
-                restler.get(url).on("complete", function(data) {
-                    sessionStore.client.setex("repo-" + repo, 21600, JSON.stringify(data));
-                    callback(null, data);
-                });
-            } else {
-                callback(null, JSON.parse(result));
-            }
-        });
-    } else {
-        restler.get(url).on("complete", function(data) {
-            callback(null, data);
-        });
-    }
-}
-
 // Get the IBM Code User metrics overview
 app.get("/users", [forceSslIfNotLocal, authenticate()], function(req, res) {
     var app = req.app;
@@ -598,58 +570,57 @@ function getStatsPage(req, res) {
             metric.sortItem(runtimes);
             metric.sortItem(services);
             metric.sortItem(languages);
-            async.forEachOf(apps, function(value, key, callback) {
-                getStats(key, function(error, data) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        value.githubStats = data;
-                        apps[key] = value;
-                        callback(null);
-                    }
-                });
-            }, function() {
-                var appsSortedByCount = [];
-                var sum = 0;
-                for (var url in apps) {
-                    sum += apps[url].count;
-                    appsSortedByCount.push(apps[url]);
+            var appsSortedByCount = [];
+            for (var url in apps) {
+                appsSortedByCount.push(apps[url]);
+            }
+            appsSortedByCount.sort(function(a, b) {
+                if (a.count < b.count) {
+                    return -1;
                 }
-                appsSortedByCount.sort(function(a, b) {
-                    if (a.count < b.count) {
-                        return -1;
-                    }
-                    if (a.count > b.count) {
-                        return 1;
-                    }
-                    return 0;
-                }).reverse();
-                //Calculate top 5 repositories.
-                var data = [];
-                for (var i = 0; i < 5; i++) {
-                    var link = appsSortedByCount[i].url;
-                    var urlSuffix = link.split('.com/');
-                    var repoPrefix = urlSuffix[urlSuffix.length - 1].split('.');
-                    var key = repoPrefix[0];
-                    var value = Math.round((appsSortedByCount[i].count / sum) * 10000) / 100
-                    var item = {
-                        "key": key,
-                        "value": value
-                    };
-                    data.push(item);
+                if (a.count > b.count) {
+                    return 1;
                 }
-                var renderJson = {
-                    data: JSON.stringify(data),
-                    apps: appsSortedByCount,
-                    services: JSON.stringify(services),
-                    runtimes: JSON.stringify(runtimes),
-                    languages: JSON.stringify(languages)
-                };
-                if (!appEnv.isLocal) {
-                    sessionStore.client.setex("statsPage", 900, JSON.stringify(renderJson));
+                return 0;
+            }).reverse();
+            var sum = 0;
+            var patternSortedByCount = [];
+            var othersSortedByCount = [];
+            appsSortedByCount.forEach(function(repo){
+                if(repo.url.toLowerCase().includes("https://github.com/ibm/") || 
+                    repo.url.toLowerCase().includes("http://github.com/ibm/")){
+                    patternSortedByCount.push(repo);
+                    sum += repo.count;
+                }else{
+                    othersSortedByCount.push(repo);
                 }
-                res.render("stats", renderJson);
             });
+            //Calculate top 5 repositories.
+            var data = [];
+            for (var i = 0; i < 5; i++) {
+                var link = patternSortedByCount[i].url;
+                var urlSuffix = link.split('.com/');
+                var repoPrefix = urlSuffix[urlSuffix.length - 1].split('.');
+                var key = repoPrefix[0];
+                var value = Math.round((patternSortedByCount[i].count / sum) * 10000) / 100
+                var item = {
+                    "key": key,
+                    "value": value
+                };
+                data.push(item);
+            }
+            var renderJson = {
+                data: JSON.stringify(data),
+                apps: patternSortedByCount,
+                others: othersSortedByCount,
+                services: JSON.stringify(services),
+                runtimes: JSON.stringify(runtimes),
+                languages: JSON.stringify(languages)
+            };
+            if (!appEnv.isLocal) {
+                sessionStore.client.setex("statsPage", 900, JSON.stringify(renderJson));
+            }
+            res.render("stats", renderJson);
         });
     });
 }
@@ -776,14 +747,9 @@ app.get("/stats/:hash", [forceSslIfNotLocal, authenticate()], function(req, res)
             }
             return 0;
         }).reverse();
-        getStats(appsSortedByCount[0].url, function(error, result) {
-            if (!error) {
-                appsSortedByCount[0].githubStats = result;
-            }
-            res.render("repo", {
-                protocolAndHost: protocolAndHost,
-                apps: appsSortedByCount
-            });
+        res.render("repo", {
+            protocolAndHost: protocolAndHost,
+            apps: appsSortedByCount
         });
     });
 });
@@ -1008,25 +974,6 @@ app.post("/api/v1/track", jsonParser, track);
 
 app.get("/api/v1/whoami", [forceSslIfNotLocal, authenticate()], function(request, response) {
     response.send(request.session.passport.user);
-});
-
-app.get("/api/v1/stats", [forceSslIfNotLocal, authenticate()], function(request, response) {
-    var repo = request.query.repo;
-
-    if (GITHUB_STATS_API_KEY === "") {
-        response.json({
-            "error": "GITHUB_STATS_API_KEY is not server on the server"
-        });
-        return;
-    }
-
-    getStats(repo, function(error, result) {
-        if (error) {
-            response.send(error);
-        } else {
-            response.json(result);
-        }
-    });
 });
 
 app.get("/error", function(request, response) {
