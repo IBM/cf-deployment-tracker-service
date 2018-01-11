@@ -475,6 +475,10 @@ app.get("/company/:hash", [forceSslIfNotLocal, authenticate()], function(req, re
     });
 });
 
+app.get("/companies", [forceSslIfNotLocal, authenticate()], function(req, res) {
+    res.render("companies");
+});
+
 app.get("/", forceSslIfNotLocal, function(req, res) {
     res.render("index");
 });
@@ -641,10 +645,10 @@ function getStatsPage(req, res) {
                     runtimes: JSON.stringify(runtimes),
                     languages: JSON.stringify(languages)
                 };
-                res.render("stats", renderJson);
                 if (!appEnv.isLocal) {
                     sessionStore.client.setex("statsPage", 900, JSON.stringify(renderJson));
                 }
+                res.render("stats", renderJson);
             });
         });
     });
@@ -978,9 +982,10 @@ function track(req, res) {
     var kube = {};
     if (req.body.clusterid) kube.cluster_id = req.body.clusterid;
     if (req.body.customerid) kube.customer_id = req.body.customerid;
+    var ow_action_name = '';
     if (req.body.ow_action_name) ow_action_name = req.body.ow_action_name;
     //Sent data to Segment
-    metric.sentAnalytic(event, req.body.config, provider, kube);
+    metric.sentAnalytic(event, req.body.config, provider, kube, ow_action_name);
     if (provider) event.provider = provider;
 
     var eventsDb = deploymentTrackerDb.use("events");
