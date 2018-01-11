@@ -160,11 +160,9 @@
                                                       "{{else}}{{inc @index}}. {{url}} {{/if}} {{else}} <em>No repository URL</em> " +
                                                       "{{/if}}{{#if url_hash}}<a href=\"/stats/{{url_hash}}\">" +
                                                       "<span class=\"glyphicon glyphicon-zoom-in\" aria-hidden=\"true\"></span></a>" +
-                                                      "{{/if}}<span class=\"badge\">{{count}}</span></h2>" +
-                                                      "{{#if url_hash}}<input type=\"text\" class=\"form-control\" readonly=\"readonly\" value=\"{{url_hash}}\">{{/if}} " +
-                                                      "<ul class=\"list-group\"> {{#each deploys}} {{#each this}} <li class=\"list-group-item\"> " +
-                                                      "<span class=\"badge\">{{this}}</span> {{@../key}}-{{@key}} </li> {{/each}} " +
-                                                      "{{/each}} </ul> </section> {{/each}}";
+                                                      "{{/if}} <span class=\"badge\">{{count}}</span></h2>" +
+                                                      "{{#if url_hash}}<input type=\"text\" class=\"form-control\" readonly=\"readonly\" value=\"{{url_hash}}\">{{/if}}" +
+                                                      "<ul class=\"list-group\">{{#each deploys}}{{#each this}}<li class=\"list-group-item\"><span class=\"badge\">{{this}}</span>{{@../key}}-{{@key}}</li>{{/each}}{{/each}}</ul></section>{{/each}}";
      });
       document.getElementById("others_button").addEventListener("click", function () {
         document.getElementById("repo").innerHTML = " {{#each others}}<section><h2>{{#if url}}{{#if is_url}}" + 
@@ -172,11 +170,9 @@
                                                       "{{else}}{{inc @index}}. {{url}} {{/if}} {{else}} <em>No repository URL</em> " +
                                                       "{{/if}}{{#if url_hash}}<a href=\"/stats/{{url_hash}}\">" +
                                                       "<span class=\"glyphicon glyphicon-zoom-in\" aria-hidden=\"true\"></span></a>" +
-                                                      "{{/if}}<span class=\"badge\">{{count}}</span></h2>" +
-                                                      "{{#if url_hash}}<input type=\"text\" class=\"form-control\" readonly=\"readonly\" value=\"{{url_hash}}\">{{/if}} " +
-                                                      "<ul class=\"list-group\"> {{#each deploys}} {{#each this}} <li class=\"list-group-item\"> " +
-                                                      "<span class=\"badge\">{{this}}</span> {{@../key}}-{{@key}} </li> {{/each}} " +
-                                                      "{{/each}} </ul> </section> {{/each}}";
+                                                      "{{/if}} <span class=\"badge\">{{count}}</span></h2>" +
+                                                      "{{#if url_hash}}<input type=\"text\" class=\"form-control\" readonly=\"readonly\" value=\"{{url_hash}}\">{{/if}}" +
+                                                      "<ul class=\"list-group\">{{#each deploys}}{{#each this}}<li class=\"list-group-item\"><span class=\"badge\">{{this}}</span>{{@../key}}-{{@key}}</li>{{/each}}{{/each}}</ul></section>{{/each}}";
      });
 
       $('#pattern_button').click(function () {
