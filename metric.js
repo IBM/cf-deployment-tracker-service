@@ -1,8 +1,8 @@
 var Analytics = require('analytics-node');
 var analytics = new Analytics(process.env.WRITE_KEY);
 module.exports = {
-    sentAnalytic: function(data, config, provider, kube) {
-        var newData = massage(data, config, provider, kube);
+    sentAnalytic: function(data, config, provider, kube, ow_action_name) {
+        var newData = massage(data, config, provider, kube, ow_action_name);
         sentData(newData);
         return newData;
     },
@@ -23,7 +23,7 @@ module.exports = {
 };
 
 // Restructure the data format.
-function massage(data, config, provider, kube) {
+function massage(data, config, provider, kube, ow_action_name) {
     //rename entries to our segment format
     var newData = {
         repository_id: '',
@@ -43,6 +43,7 @@ function massage(data, config, provider, kube) {
             if (config.event_id) newData.event_id = config.event_id;
             if (config.event_organizer) newData.event_organizer = config.event_organizer;
             if (provider) newData.provider = provider;
+            if (ow_action_name) newData.ow_action_name = ow_action_name;
             if (newData.cfMetric.config) delete newData.cfMetric.config;
         }
         if (data.date_sent) newData.date_deployed = data.date_sent;

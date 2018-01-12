@@ -14,56 +14,6 @@
     <script type="text/javascript" src="/js/vis/simpledatavis-bubblechart.js"></script>
     <script type="text/javascript" src="/js/vis/simpledatavis-piechart.js"></script>
     <script type="text/javascript" src="/js/vis/simpledatavis-rangebarchart.js"></script>
-    <!--[if lt IE 9]>
-      <script src="/assets/html5shiv/dist/html5shiv.min.js"></script>
-      <script src="/assets/respond/dest/respond.min.js"></script>
-    <![endif]-->
-    <script type="text/javascript">
-
-    function htmlDecode(input){
-      var e = document.createElement('div');
-      e.innerHTML = input;
-      return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
-    }
-
-     var data = JSON.parse(htmlDecode("{{data}}"));
-     var services = JSON.parse(htmlDecode("{{services}}"));
-     var runtimes = JSON.parse(htmlDecode("{{runtimes}}"));
-     var languages = JSON.parse(htmlDecode("{{languages}}"));
-     window.addEventListener('DOMContentLoaded', function () {
-       //Number of deployment
-       SimpleDataVis(data)
-         .attr('type', 'bar-chart')
-         .attr('tooltip', function (d) {
-           return d.key + ': ' + d.value + "%"
-         })
-         .render('#datavischart')
-       //services
-       SimpleDataVis(services)
-         .attr('type', 'pie-chart')
-         .attr('donut', true)
-         .attr('tooltip', function (d) {
-           return d.key + ': ' + d.value 
-         })
-         .render('#datavisservice')
-      //runtimes 
-      SimpleDataVis(runtimes)
-         .attr('type', 'pie-chart')
-         .attr('donut', true)
-         .attr('tooltip', function (d) {
-           return d.key + ': ' + d.value 
-         })
-         .render('#datavisruntime')
-      //Programming Languages
-      SimpleDataVis(languages)
-         .attr('type', 'pie-chart')
-         .attr('donut', true)
-         .attr('tooltip', function (d) {
-           return d.key + ': ' + d.value 
-         })
-         .render('#datavislanguage')
-     })
-  </script>
   </head>
   <body>
     <div class="jumbotron">
@@ -117,15 +67,19 @@
       <ol class="breadcrumb">
         <li class="active">Stats</li>
       </ol>
-      <h2>Application Deployments by Repository</h2>
-      <!-- <p><a class="btn btn-default" href="/stats.csv" role="button">Download as CSV <span class="glyphicon glyphicon-download" aria-hidden="true"></span></a></p> -->
+      <h2>Application Deployments by Repository &nbsp;&nbsp;&nbsp;&nbsp;
+        <button class="btn btn-success btn-lg" id="pattern_button">Code Patterns</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button class="btn btn-info btn-lg" id="others_button">Other Repositories</button>
+      </h2>
+      <div id="repo">
       {{#each apps}}
       <section>
         <h2>
           {{#if url}}
             {{#if is_url}}
-              <a href="{{url}}" target="_blank">{{url}}</a>
-              {{else}}{{url}}
+              {{inc @index}}. <a href="{{url}}" target="_blank">{{url}}</a>
+              {{else}}{{inc @index}}. {{url}}
             {{/if}}
           {{else}}
             <em>No repository URL</em>
@@ -138,19 +92,6 @@
           {{/if}}
           <span class="badge">{{count}}</span>
         </h2>
-        {{#if githubStats}}
-        <div class="form-control" readonly="readonly">
-          <span>Github Stats:</span>
-          <a href="#">Clones <span class="badge">{{githubStats.Clones}}</span></a> |
-          <a href="#">Visits <span class="badge">{{githubStats.Visits}}</span></a> |
-          {{#if url_hash}}
-            <a href="/stats/{{url_hash}}">
-              More info...
-              <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
-            </a>
-          {{/if}}
-        </div>
-        {{/if}}
         {{#if url_hash}}<input type="text" class="form-control" readonly="readonly" value="{{url_hash}}">{{/if}}
         <ul class="list-group">
           {{#each deploys}}
@@ -164,8 +105,94 @@
         </ul>
       </section>
     {{/each}}
+  </div>
     </article>
     <script src="/assets/jquery/dist/jquery.min.js"></script>
     <script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    function htmlDecode(input){
+      var e = document.createElement('div');
+      e.innerHTML = input;
+      return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+    }
+
+     var data = JSON.parse(htmlDecode("{{data}}"));
+     var services = JSON.parse(htmlDecode("{{services}}"));
+     var runtimes = JSON.parse(htmlDecode("{{runtimes}}"));
+     var languages = JSON.parse(htmlDecode("{{languages}}"));
+     window.addEventListener('DOMContentLoaded', function () {
+       //Number of deployment
+       SimpleDataVis(data)
+         .attr('type', 'bar-chart')
+         .attr('tooltip', function (d) {
+           return d.key + ': ' + d.value + "%"
+         })
+         .render('#datavischart')
+       //services
+       SimpleDataVis(services)
+         .attr('type', 'pie-chart')
+         .attr('donut', true)
+         .attr('tooltip', function (d) {
+           return d.key + ': ' + d.value 
+         })
+         .render('#datavisservice')
+      //runtimes 
+      SimpleDataVis(runtimes)
+         .attr('type', 'pie-chart')
+         .attr('donut', true)
+         .attr('tooltip', function (d) {
+           return d.key + ': ' + d.value 
+         })
+         .render('#datavisruntime')
+      //Programming Languages
+      SimpleDataVis(languages)
+         .attr('type', 'pie-chart')
+         .attr('donut', true)
+         .attr('tooltip', function (d) {
+           return d.key + ': ' + d.value 
+         })
+         .render('#datavislanguage')
+     })
+
+      document.getElementById("pattern_button").addEventListener("click", function () {
+        document.getElementById("repo").innerHTML = " {{#each apps}}<section><h2>{{#if url}}{{#if is_url}}" + 
+                                                      "{{inc @index}}. <a href=\"{{url}}\" target=\"_blank\">{{url}}</a> " +
+                                                      "{{else}}{{inc @index}}. {{url}} {{/if}} {{else}} <em>No repository URL</em> " +
+                                                      "{{/if}}{{#if url_hash}}<a href=\"/stats/{{url_hash}}\">" +
+                                                      "<span class=\"glyphicon glyphicon-zoom-in\" aria-hidden=\"true\"></span></a>" +
+                                                      "{{/if}} <span class=\"badge\">{{count}}</span></h2>" +
+                                                      "{{#if url_hash}}<input type=\"text\" class=\"form-control\" readonly=\"readonly\" value=\"{{url_hash}}\">{{/if}}" +
+                                                      "<ul class=\"list-group\">{{#each deploys}}{{#each this}}<li class=\"list-group-item\"><span class=\"badge\">{{this}}</span>{{@../key}}-{{@key}}</li>{{/each}}{{/each}}</ul></section>{{/each}}";
+     });
+      document.getElementById("others_button").addEventListener("click", function () {
+        document.getElementById("repo").innerHTML = " {{#each others}}<section><h2>{{#if url}}{{#if is_url}}" + 
+                                                      "{{inc @index}}. <a href=\"{{url}}\" target=\"_blank\">{{url}}</a> " +
+                                                      "{{else}}{{inc @index}}. {{url}} {{/if}} {{else}} <em>No repository URL</em> " +
+                                                      "{{/if}}{{#if url_hash}}<a href=\"/stats/{{url_hash}}\">" +
+                                                      "<span class=\"glyphicon glyphicon-zoom-in\" aria-hidden=\"true\"></span></a>" +
+                                                      "{{/if}} <span class=\"badge\">{{count}}</span></h2>" +
+                                                      "{{#if url_hash}}<input type=\"text\" class=\"form-control\" readonly=\"readonly\" value=\"{{url_hash}}\">{{/if}}" +
+                                                      "<ul class=\"list-group\">{{#each deploys}}{{#each this}}<li class=\"list-group-item\"><span class=\"badge\">{{this}}</span>{{@../key}}-{{@key}}</li>{{/each}}{{/each}}</ul></section>{{/each}}";
+     });
+
+      $('#pattern_button').click(function () {
+      if($('#pattern_button').hasClass('btn-success')){
+      }else{
+        $('#pattern_button').toggleClass("btn-info");
+        $('#pattern_button').toggleClass("btn-success");
+        $('#others_button').toggleClass("btn-info");
+        $('#others_button').toggleClass("btn-success");
+     }
+     });
+      $('#others_button').click(function () {
+      if($('#others_button').hasClass('btn-success')){
+      }else{
+        $('#pattern_button').toggleClass("btn-info");
+        $('#pattern_button').toggleClass("btn-success");
+        $('#others_button').toggleClass("btn-info");
+        $('#others_button').toggleClass("btn-success");
+     }
+     });
+  </script>
   </body>
 </html>

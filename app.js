@@ -208,34 +208,6 @@ var urlEncodedParser = bodyParser.urlencoded({
     }),
     jsonParser = bodyParser.json();
 
-function getStats(repo, callback) {
-    var baseURL = "https://github-stats.mybluemix.net/api/v1/stats";
-
-    if (GITHUB_STATS_API_KEY === "") {
-        callback(null, null);
-        return;
-    }
-
-    var url = baseURL + "?apiKey=" + GITHUB_STATS_API_KEY + "&repo=" + repo;
-
-    if (!appEnv.isLocal) {
-        sessionStore.client.get("repo-" + repo, function(err, result) {
-            if (err || !result) {
-                restler.get(url).on("complete", function(data) {
-                    sessionStore.client.setex("repo-" + repo, 21600, JSON.stringify(data));
-                    callback(null, data);
-                });
-            } else {
-                callback(null, JSON.parse(result));
-            }
-        });
-    } else {
-        restler.get(url).on("complete", function(data) {
-            callback(null, data);
-        });
-    }
-}
-
 // Get the IBM Code User metrics overview
 app.get("/users", [forceSslIfNotLocal, authenticate()], function(req, res) {
     var app = req.app;
@@ -245,7 +217,6 @@ app.get("/users", [forceSslIfNotLocal, authenticate()], function(req, res) {
         if (!err) {
             try {
                 var users = body['users'];
-                // var revenue = body['serviceCost'];
                 var sum = 0;
                 body['userGeo'].forEach(function(country) {
                     sum += parseInt(country.value);
@@ -476,6 +447,10 @@ app.get("/company/:hash", [forceSslIfNotLocal, authenticate()], function(req, re
     });
 });
 
+app.get("/companies", [forceSslIfNotLocal, authenticate()], function(req, res) {
+    res.render("companies");
+});
+
 app.get("/", forceSslIfNotLocal, function(req, res) {
     res.render("index");
 });
@@ -496,31 +471,33 @@ function getStatsPage(req, res) {
             var url = row.key[0];
             var year = row.key[1];
             var month = row.key[2];
-            if (!(url in apps)) {
-                apps[url] = {
-                    url: url,
-                    count: 0,
-                    deploys: []
-                };
-                if (url) {
-                    apps[url].url_hash = crypto.createHash("md5").update(url).digest("hex");
+            if(url.includes("https://github.com/") || url.includes("http://github.com/")){
+                if (!(url in apps)) {
+                    apps[url] = {
+                        url: url,
+                        count: 0,
+                        deploys: []
+                    };
+                    if (url) {
+                        apps[url].url_hash = crypto.createHash("md5").update(url).digest("hex");
+                    }
                 }
-            }
-            if (validator.isURL(url, {
-                    protocols: ["http", "https"],
-                    require_protocol: true
-                })) {
-                apps[url].is_url = true;
-            }
-            if (!(year in apps[url].deploys)) {
-                apps[url].deploys[year] = {};
-            }
-            if (!(month in apps[url].deploys[year])) {
-                apps[url].deploys[year][month] = 1;
-                apps[url].count += 1;
-            } else {
-                apps[url].deploys[year][month] += 1;
-                apps[url].count += 1;
+                if (validator.isURL(url, {
+                        protocols: ["http", "https"],
+                        require_protocol: true
+                    })) {
+                    apps[url].is_url = true;
+                }
+                if (!(year in apps[url].deploys)) {
+                    apps[url].deploys[year] = {};
+                }
+                if (!(month in apps[url].deploys[year])) {
+                    apps[url].deploys[year][month] = 1;
+                    apps[url].count += 1;
+                } else {
+                    apps[url].deploys[year][month] += 1;
+                    apps[url].count += 1;
+                }
             }
         });
 
@@ -533,7 +510,6 @@ function getStatsPage(req, res) {
             var runtime = {};
             var service = {};
             var language = {};
-            // var serviceCount = 0;
             body2.rows.map(function(row) {
                 var item = row.key[0];
                 if (item != null) {
@@ -579,7 +555,6 @@ function getStatsPage(req, res) {
                 delete service[deprecated[i]];
             }
             var services = Object.keys(service).map(function(key) {
-                // serviceCount += 1;
                 return {
                     key: key.replace(/\b\w/g, l => l.toUpperCase()),
                     value: service[key]
@@ -595,58 +570,57 @@ function getStatsPage(req, res) {
             metric.sortItem(runtimes);
             metric.sortItem(services);
             metric.sortItem(languages);
-            async.forEachOf(apps, function(value, key, callback) {
-                getStats(key, function(error, data) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        value.githubStats = data;
-                        apps[key] = value;
-                        callback(null);
-                    }
-                });
-            }, function() {
-                var appsSortedByCount = [];
-                var sum = 0;
-                for (var url in apps) {
-                    sum += apps[url].count;
-                    appsSortedByCount.push(apps[url]);
+            var appsSortedByCount = [];
+            for (var url in apps) {
+                appsSortedByCount.push(apps[url]);
+            }
+            appsSortedByCount.sort(function(a, b) {
+                if (a.count < b.count) {
+                    return -1;
                 }
-                appsSortedByCount.sort(function(a, b) {
-                    if (a.count < b.count) {
-                        return -1;
-                    }
-                    if (a.count > b.count) {
-                        return 1;
-                    }
-                    return 0;
-                }).reverse();
-                //Calculate top 5 repositories.
-                var data = [];
-                for (var i = 0; i < 5; i++) {
-                    var link = appsSortedByCount[i].url;
-                    var urlSuffix = link.split('.com/');
-                    var repoPrefix = urlSuffix[urlSuffix.length - 1].split('.');
-                    var key = repoPrefix[0];
-                    var value = Math.round((appsSortedByCount[i].count / sum) * 10000) / 100
-                    var item = {
-                        "key": key,
-                        "value": value
-                    };
-                    data.push(item);
+                if (a.count > b.count) {
+                    return 1;
                 }
-                var renderJson = {
-                    data: JSON.stringify(data),
-                    apps: appsSortedByCount,
-                    services: JSON.stringify(services),
-                    runtimes: JSON.stringify(runtimes),
-                    languages: JSON.stringify(languages)
-                };
-                res.render("stats", renderJson);
-                if (!appEnv.isLocal) {
-                    sessionStore.client.setex("statsPage", 900, JSON.stringify(renderJson));
+                return 0;
+            }).reverse();
+            var sum = 0;
+            var patternSortedByCount = [];
+            var othersSortedByCount = [];
+            appsSortedByCount.forEach(function(repo){
+                if(repo.url.toLowerCase().includes("https://github.com/ibm/") || 
+                    repo.url.toLowerCase().includes("http://github.com/ibm/")){
+                    patternSortedByCount.push(repo);
+                    sum += repo.count;
+                }else{
+                    othersSortedByCount.push(repo);
                 }
             });
+            //Calculate top 5 repositories.
+            var data = [];
+            for (var i = 0; i < 5; i++) {
+                var link = patternSortedByCount[i].url;
+                var urlSuffix = link.split('.com/');
+                var repoPrefix = urlSuffix[urlSuffix.length - 1].split('.');
+                var key = repoPrefix[0];
+                var value = Math.round((patternSortedByCount[i].count / sum) * 10000) / 100
+                var item = {
+                    "key": key,
+                    "value": value
+                };
+                data.push(item);
+            }
+            var renderJson = {
+                data: JSON.stringify(data),
+                apps: patternSortedByCount,
+                others: othersSortedByCount,
+                services: JSON.stringify(services),
+                runtimes: JSON.stringify(runtimes),
+                languages: JSON.stringify(languages)
+            };
+            if (!appEnv.isLocal) {
+                sessionStore.client.setex("statsPage", 900, JSON.stringify(renderJson));
+            }
+            res.render("stats", renderJson);
         });
     });
 }
@@ -666,29 +640,6 @@ app.get("/stats", [forceSslIfNotLocal, authenticate()], function(req, res) {
         getStatsPage(req, res);
     }
 });
-
-// Get CSV of metrics overview
-// app.get("/stats.csv", forceSslIfNotLocal, function(req, res) {
-//   var app = req.app;
-//   var deploymentTrackerDb = app.get("deployment-tracker-db");
-//   if (!deploymentTrackerDb) {
-//     return res.status(500);
-//   }
-//   var eventsDb = deploymentTrackerDb.use("events");
-//   eventsDb.view("deployments", "by_repo", {group_level: 3}, function(err, body) {
-//     var apps = [
-//       ["URL", "Year", "Month", "Deployments"]
-//     ];
-//     body.rows.map(function(row) {
-//       var url = row.key[0];
-//       var year = row.key[1];
-//       var month = row.key[2];
-//       var count = row.value;
-//       apps.push([url, year, month, count]);
-//     });
-//     res.csv(apps);
-//   });
-// });
 
 // Get JSON of metrics overview
 app.get("/repos", [forceSslIfNotLocal, authenticate()], function(req, res) {
@@ -796,39 +747,12 @@ app.get("/stats/:hash", [forceSslIfNotLocal, authenticate()], function(req, res)
             }
             return 0;
         }).reverse();
-        getStats(appsSortedByCount[0].url, function(error, result) {
-            if (!error) {
-                appsSortedByCount[0].githubStats = result;
-            }
-            res.render("repo", {
-                protocolAndHost: protocolAndHost,
-                apps: appsSortedByCount
-            });
+        res.render("repo", {
+            protocolAndHost: protocolAndHost,
+            apps: appsSortedByCount
         });
     });
 });
-
-// Public API to get metrics for a specific repo
-// app.get("/stats/:hash/metrics.json", forceSslIfNotLocal, function(req, res) {
-//   var app = req.app,
-//     deploymentTrackerDb = app.get("deployment-tracker-db");
-
-//   if (!deploymentTrackerDb) {
-//     return res.status(500);
-//   }
-//   var eventsDb = deploymentTrackerDb.use("events"),
-//    hash = req.params.hash;
-
-//   //TODO: Consider caching this data with Redis
-//   eventsDb.view("deployments", "by_repo_hash",
-//     {startkey: [hash], endkey: [hash, {}, {}, {}, {}, {}, {}], group_level: 1}, function(err, body) {
-//     var appStats = {
-//       url_hash: hash,
-//       count: body.rows[0].value
-//     };
-//     res.json(appStats);
-//   });
-// });
 
 // Get badge of metrics for a specific repo
 app.get("/stats/:hash/badge.svg", forceSslIfNotLocal, function(req, res) {
@@ -1024,8 +948,10 @@ function track(req, res) {
     var kube = {};
     if (req.body.clusterid) kube.cluster_id = req.body.clusterid;
     if (req.body.customerid) kube.customer_id = req.body.customerid;
+    var ow_action_name = '';
+    if (req.body.ow_action_name) ow_action_name = req.body.ow_action_name;
     //Sent data to Segment
-    metric.sentAnalytic(event, req.body.config, provider, kube);
+    metric.sentAnalytic(event, req.body.config, provider, kube, ow_action_name);
     if (provider) event.provider = provider;
 
     var eventsDb = deploymentTrackerDb.use("events");
@@ -1050,25 +976,6 @@ app.get("/api/v1/whoami", [forceSslIfNotLocal, authenticate()], function(request
     response.send(request.session.passport.user);
 });
 
-app.get("/api/v1/stats", [forceSslIfNotLocal, authenticate()], function(request, response) {
-    var repo = request.query.repo;
-
-    if (GITHUB_STATS_API_KEY === "") {
-        response.json({
-            "error": "GITHUB_STATS_API_KEY is not server on the server"
-        });
-        return;
-    }
-
-    getStats(repo, function(error, result) {
-        if (error) {
-            response.send(error);
-        } else {
-            response.json(result);
-        }
-    });
-});
-
 app.get("/error", function(request, response) {
     response.render("error", {
         message: "Failed to authenticate"
@@ -1081,6 +988,11 @@ app.get("/robots.txt", function(request, response) {
 });
 
 // Set the view engine
+hbs.handlebars.registerHelper("inc", function(value, options)
+{
+    return parseInt(value) + 1;
+});
+
 app.set("view engine", "html");
 app.engine("html", hbs.__express);
 app.engine("xml", hbs.__express);

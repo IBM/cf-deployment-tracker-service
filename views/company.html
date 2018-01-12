@@ -20,10 +20,6 @@
         cursor: pointer;
       }
     </style>
-    <!--[if lt IE 9]>
-      <script src="/assets/html5shiv/dist/html5shiv.min.js"></script>
-      <script src="/assets/respond/dest/respond.min.js"></script>
-    <![endif]-->
   </head>
   <body>
     <div class="jumbotron">
@@ -33,7 +29,8 @@
     <article>         
       <ol class="breadcrumb">
           <li><a href="/stats">Stats</a></li>
-          <li class="active">Company Statistics</li>
+          <li><a href="/companies">Companies</a></li>
+          <li class="active">Company Statistics (Specific Company's Service and Runtime Usage)</li>
         </ol>
     </article>
       </div>
@@ -54,7 +51,6 @@
    </div>
   <div class="col-xs-12 col-md-12 col-lg-12">
     <h2>&nbsp;&nbsp;&nbsp;&nbsp;Usage from {{company}} for Each Service
-<!--   <button type="button" class="btn btn-info" data-target="#expand" id ="more"> <span class="glyphicon glyphicon-collapse-down" aria-expanded="false"></span></button> -->
    </h2>
   </div>
   <div id="expand" class="collapse in">
