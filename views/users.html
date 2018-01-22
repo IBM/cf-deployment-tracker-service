@@ -49,6 +49,29 @@
               <div id="datavisgeo"></div>
       </figure>
      </div>
+<!--   <article class="container">
+    <h2 class="col-xs-12 col-md-12 col-lg-12">Number of Captured Users by Repository (Currently only available for Cloud Foundry and Kubernetes Application) <br><br>
+    </h2>
+      <div style="text-align:center;" class="col-xs-12 col-md-12 col-lg-12">
+        <button class="btn btn-success btn-lg" id="pattern_button">Code Patterns</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button class="btn btn-info btn-lg" id="others_button">Other Repositories</button>
+  </div>
+    <div id="repo" class="col-xs-12 col-md-12 col-lg-12">
+      {{#each ibmCodeUsers}}
+      <section>
+        <h2 class="breadcrumb">
+          {{#if key}}
+          <h2>
+            {{inc @index}}. <a href="{{key}}" target="_blank">{{key}}</a>
+            <span class="badge">{{value}}</span>
+          </h2>
+          {{/if}}
+        </h2>
+      </section>
+    {{/each}}
+  </div>
+</article> -->
     <script src="/assets/jquery/dist/jquery.min.js"></script>
     <script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/assets/zeroclipboard/dist/ZeroClipboard.min.js"></script>
@@ -86,6 +109,35 @@
          })
          .render('#datavisgeo')
      })
+      document.getElementById("pattern_button").addEventListener("click", function () {
+        document.getElementById("repo").innerHTML = "{{#each ibmCodeUsers}}<section><h2 class=\"breadcrumb\">{{#if key}}<h2>" +
+                                                      "{{inc @index}}. <a href=\"{{key}}\" target=\"_blank\">{{key}}" +
+                                                      "</a> <span class=\"badge\">{{value}}</span></h2>{{/if}}</h2></section>{{/each}}";
+     });
+      document.getElementById("others_button").addEventListener("click", function () {
+        document.getElementById("repo").innerHTML = "{{#each otherUsers}}<section><h2 class=\"breadcrumb\">{{#if key}}<h2>" +
+                                                      "{{inc @index}}. <a href=\"{{key}}\" target=\"_blank\">{{key}}" +
+                                                      "</a> <span class=\"badge\">{{value}}</span></h2>{{/if}}</h2></section>{{/each}}";
+     });
+
+      $('#pattern_button').click(function () {
+      if($('#pattern_button').hasClass('btn-success')){
+      }else{
+        $('#pattern_button').toggleClass("btn-info");
+        $('#pattern_button').toggleClass("btn-success");
+        $('#others_button').toggleClass("btn-info");
+        $('#others_button').toggleClass("btn-success");
+     }
+     });
+      $('#others_button').click(function () {
+      if($('#others_button').hasClass('btn-success')){
+      }else{
+        $('#pattern_button').toggleClass("btn-info");
+        $('#pattern_button').toggleClass("btn-success");
+        $('#others_button').toggleClass("btn-info");
+        $('#others_button').toggleClass("btn-success");
+     }
+    });
     </script>
   </body>
 </html>

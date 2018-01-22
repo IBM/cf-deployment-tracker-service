@@ -584,6 +584,7 @@
     require('./vis/simpledatavis-piechart')(SimpleDataVis)
     require('./vis/simpledatavis-rangebarchart')(SimpleDataVis)
     require('./vis/simpledatavis-stackedbarchart')(SimpleDataVis)
+    require('./vis/simpledatavis-stackedbarchart-2')(SimpleDataVis)
     require('./vis/simpledatavis-timeline')(SimpleDataVis)
   } else {
     window.SimpleDataVis = SimpleDataVis

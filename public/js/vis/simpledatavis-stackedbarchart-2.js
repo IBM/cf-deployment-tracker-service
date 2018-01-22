@@ -8,7 +8,7 @@
     var d3 = typeof module !== 'undefined' && module.exports ? require('d3') : window.d3
 
     datavis.register({
-      type: 'stacked-bar-chart',
+      type: 'stacked-bar-chart-2',
 
       canRender: function (groupedbarchartdata) {
         var data = groupedbarchartdata ? (groupedbarchartdata.data || groupedbarchartdata) : []
@@ -81,7 +81,7 @@
           xScale.rangeRoundBands([25, layers[0].length * 100], 0.08)
         }
 
-        var y = d3.scale.linear()
+        var y = d3.scale.log()
           .domain([0, yStackMax])
           .range([height, 0])
 
@@ -255,6 +255,15 @@
                 groupKeys.push(key)
               }
             }
+          groupKeys.sort(function(a, b) {
+                if (d.value[a] < d.value[b]) {
+                    return -1;
+                }
+                if (d.value[a] > d.value[b]) {
+                    return 1;
+                }
+                return 0;
+            })
           })
         } else {
           data.forEach(function (d) {
@@ -270,6 +279,7 @@
             d.value = value
           })
         }
+
 
         var color = d3.scaleOrdinal(d3.schemeCategory10)
         var margin = {top: 20, right: 260, bottom: 120, left: 80}
@@ -296,16 +306,17 @@
           xScale.rangeRound([25, v.length * 100]).padding(0.08)
         }
 
-        var y = d3.scaleLinear()
-          .domain([0, yStackMax])
-          .range([height, 0])
+        var y = d3.scaleLog()
+          .domain([1, yStackMax])
+          .range([height, 1])     
 
         var xAxis = d3.axisBottom(xScale)
           .tickSize(0)
           .tickPadding(6)
 
         var yAxis = d3.axisLeft(y)
-          .tickFormat(d3.format('.2s'))
+          .ticks(7, ",.1s")
+          // .tickFormat(d3.format('.2s'))
 
         // setup the svg element
         var svg = selection.selectAll('svg').data([data])
@@ -345,12 +356,13 @@
           ? rect.transition().duration(300).delay(function (d, i) { return i * 10 })
           : rect
         recttransition
-          .attr('x', function (d) { return xScale(d.data.key) })
+          .attr('x', function (d) {return xScale(d.data.key) })
           .attr('width', xScale.bandwidth())
           // .attr('y', function (d) { return y(d[1]) })
           // .attr('height', function (d) { return y(d[0]) - y(d[1]) })
           .attr('y', function (d) { if(!isNaN(y(d[1]))) return y(d[1]); })
-          .attr('height', function (d) { if(!isNaN(y(d[0]) - y(d[1]))) return y(d[0]) - y(d[1]) })
+          .attr('height', function (d) {if(!isNaN(y(d[0]) - y(d[1]))) {
+            if(d[0] > 0){return y(d[0]) - y(d[1])}else{return y(d[0]+1) - y(d[1])}}})
 
         if (typeof module === 'undefined' || !module.exports) {
           recttransition

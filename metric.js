@@ -19,6 +19,26 @@ module.exports = {
             }
             return 0;
         }).reverse();
+    },
+    sortCount: function(array) {
+        array.sort(function(a, b) {
+            if (a.count < b.count) {
+                return -1;
+            }
+            if (a.count > b.count) {
+                return 1;
+            }
+            return 0;
+        }).reverse();
+    },
+    toArrayCap: function(map) {
+        var temp = Object.keys(map).map(function(key) {
+            return {
+                key: key.replace(/\b\w/g, l => l.toUpperCase()),
+                value: map[key]
+            };
+        });
+        return temp;
     }
 };
 
