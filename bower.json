@@ -8,7 +8,7 @@
     "public/assets"
   ],
   "dependencies": {
-    "bootstrap": "*",
+    "bootstrap": "^3.3.7",
     "jquery": "*",
     "html5shiv": "*",
     "respond": "*",

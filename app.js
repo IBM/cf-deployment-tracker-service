@@ -222,9 +222,13 @@ app.get("/users", [forceSslIfNotLocal, authenticate()], function(req, res) {
                     sum += parseInt(country.value);
                 })
                 var userGeo = metric.listTopServices(body['userGeo'], sum);
+                var ibmCodeUsers = body['ibmCodeUsers'];
+                var otherUsers = body['otherUsers'];
                 res.render("users", {
                     users: JSON.stringify(users),
-                    userGeo: JSON.stringify(userGeo)
+                    userGeo: JSON.stringify(userGeo),
+                    ibmCodeUsers: ibmCodeUsers,
+                    otherUsers: otherUsers
                 });
             } catch (ex) {}
         }
@@ -471,7 +475,7 @@ function getStatsPage(req, res) {
             var url = row.key[0];
             var year = row.key[1];
             var month = row.key[2];
-            if(url.includes("https://github.com/") || url.includes("http://github.com/")){
+            if (url.includes("https://github.com/") || url.includes("http://github.com/")) {
                 if (!(url in apps)) {
                     apps[url] = {
                         url: url,
@@ -500,7 +504,6 @@ function getStatsPage(req, res) {
                 }
             }
         });
-
         //Get service and runtime count
         eventsDb.view("deployments", "by_runtime_service_unique", {
             group_level: 3
@@ -536,37 +539,22 @@ function getStatsPage(req, res) {
                     }
                 }
             });
-            var runtimes = Object.keys(runtime).map(function(key) {
-                return {
-                    key: key.replace(/\b\w/g, l => l.toUpperCase()),
-                    value: runtime[key]
-                };
-            });
+            // Delete all the service name that are not in the active service list.
             var activeServices = JSON.parse(fs.readFileSync("service_list.json"));
             var deprecated = [];
-
             for (var deprecate in service) {
                 if (!activeServices.hasOwnProperty(deprecate)) {
                     deprecated.push(deprecate);
                 }
             }
-
             for (var i = 0; i < deprecated.length; i++) {
                 delete service[deprecated[i]];
             }
-            var services = Object.keys(service).map(function(key) {
-                return {
-                    key: key.replace(/\b\w/g, l => l.toUpperCase()),
-                    value: service[key]
-                };
-            });
-            var languages = Object.keys(language).map(function(key) {
-                return {
-                    key: key.replace(/\b\w/g, l => l.toUpperCase()),
-                    value: language[key]
-                };
-            });
-            //sort count for each app
+            // Turn all the metric list from map to array and capitalize the keys.
+            var runtimes = metric.toArrayCap(runtime);
+            var services = metric.toArrayCap(service);
+            var languages = metric.toArrayCap(language);
+            //sort count for each app and metrics.
             metric.sortItem(runtimes);
             metric.sortItem(services);
             metric.sortItem(languages);
@@ -574,24 +562,17 @@ function getStatsPage(req, res) {
             for (var url in apps) {
                 appsSortedByCount.push(apps[url]);
             }
-            appsSortedByCount.sort(function(a, b) {
-                if (a.count < b.count) {
-                    return -1;
-                }
-                if (a.count > b.count) {
-                    return 1;
-                }
-                return 0;
-            }).reverse();
+            metric.sortCount(appsSortedByCount);
+            // Filter out Repositories into two list. One is from IBM organization and one is for others.
             var sum = 0;
             var patternSortedByCount = [];
             var othersSortedByCount = [];
-            appsSortedByCount.forEach(function(repo){
-                if(repo.url.toLowerCase().includes("https://github.com/ibm/") || 
-                    repo.url.toLowerCase().includes("http://github.com/ibm/")){
+            appsSortedByCount.forEach(function(repo) {
+                if (repo.url.toLowerCase().includes("https://github.com/ibm/") ||
+                    repo.url.toLowerCase().includes("http://github.com/ibm/")) {
                     patternSortedByCount.push(repo);
                     sum += repo.count;
-                }else{
+                } else {
                     othersSortedByCount.push(repo);
                 }
             });
@@ -617,6 +598,7 @@ function getStatsPage(req, res) {
                 runtimes: JSON.stringify(runtimes),
                 languages: JSON.stringify(languages)
             };
+            // If the application is not running on local, cache it with Redis.
             if (!appEnv.isLocal) {
                 sessionStore.client.setex("statsPage", 900, JSON.stringify(renderJson));
             }
@@ -872,7 +854,6 @@ function track(req, res) {
         }
     }
 
-
     var event = {
         date_received: new Date().toJSON()
     };
@@ -892,6 +873,7 @@ function track(req, res) {
                 if (req.body.config.repository_id.includes("/")) {
                     event.repository_url = req.body.config.repository_id;
                 } else {
+                    // If repository_id is not a URL, by default it will be recognized as a IBM repo.
                     event.repository_url = "https://github.com/IBM/" + req.body.config.repository_id;
                 }
                 event.repository_url_hash = crypto.createHash("md5").update(event.repository_url).digest("hex");
@@ -941,13 +923,17 @@ function track(req, res) {
         event.bound_services = req.body.bound_services;
     }
     var provider = '';
+    // Some deployment is possible to return the cloud provider.
     if (req.body.provider) provider = req.body.provider;
     if (req.body.config) event.config = req.body.config;
+    // Bot_name and service_id are for bot asset exchange
     if (req.body.bot_name) event.chatbot_name = req.body.bot_name;
     if (req.body.service_id) event.service_id = req.body.service_id;
+    // Kubernetes metrics, customer_id is the account_id for IBM Cloud Users
     var kube = {};
     if (req.body.clusterid) kube.cluster_id = req.body.clusterid;
     if (req.body.customerid) kube.customer_id = req.body.customerid;
+    // IBM Functions action name
     var ow_action_name = '';
     if (req.body.ow_action_name) ow_action_name = req.body.ow_action_name;
     //Sent data to Segment
@@ -988,8 +974,7 @@ app.get("/robots.txt", function(request, response) {
 });
 
 // Set the view engine
-hbs.handlebars.registerHelper("inc", function(value, options)
-{
+hbs.handlebars.registerHelper("inc", function(value, options) {
     return parseInt(value) + 1;
 });
 

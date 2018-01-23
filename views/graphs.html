@@ -14,6 +14,7 @@
     <script type="text/javascript" src="/js/vis/simpledatavis-piechart.js"></script>
     <script type="text/javascript" src="/js/vis/simpledatavis-timeline.js"></script>
     <script type="text/javascript" src="/js/vis/simpledatavis-stackedbarchart.js"></script>
+    <script type="text/javascript" src="/js/vis/simpledatavis-stackedbarchart-2.js"></script>
     <script type="text/javascript" src="/js/vis/simpledatavis-groupedbarchart.js"></script>
     <style>
       .copy {
@@ -44,8 +45,12 @@
     <div class="col-xs-12 col-md-12 col-lg-12" id="graph">
     <figure class="guide-example theme_light bg_light-tint">
         <p class="type_mark" style="font-size: 30px">
-          Estimated Service Usage from IBM Code Users. 
+          Estimated Service Usage from IBM Code Users. (Linear Scale)
+        </p>
         <div id="datavischart"></div>
+        <p class="type_mark" style="font-size: 30px"> 
+        Estimated Service Usage from IBM Code Users. (Logarithmic Scale)</p>
+        <div id="datavischart-2"></div>
     </figure>
    </div>
    <div class="col-xs-12 col-md-12 col-lg-12">
@@ -95,21 +100,30 @@
      var cloudfoundry = JSON.parse(htmlDecode("{{cloudfoundry}}"));
      var kubernetes = JSON.parse(htmlDecode("{{kubernetes}}"));
      window.addEventListener('DOMContentLoaded', function () {
-      // Journey user usage
+      // Code Pattern user usage
        SimpleDataVis(dataW)
          .attr('type', 'stacked-bar-chart')
          .render('#datavischart')
+       SimpleDataVis(dataW)
+         .attr('type', 'stacked-bar-chart-2')
+         .render('#datavischart-2')
      })
-     // Journey user usage
+     // Code Pattern user usage
      document.getElementById("service_button").addEventListener("click", function () {
         document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
-                                                      "Estimated Service Usage from IBM Code Users. " +
+                                                      "Estimated Service Usage from IBM Code Users. (Linear Scale)</p> " +
                                                       "<div id=\"datavischart\"></div> " +
+                                                      "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
+                                                      "Estimated Service Usage from IBM Code Users. (Logarithmic Scale)</p>" +
+                                                      "<div id=\"datavischart-2\"></div>" +
                                                       "</figure>";
-        SimpleDataVis(dataW)
+       SimpleDataVis(dataW)
          .attr('type', 'stacked-bar-chart')
          .render('#datavischart')
+       SimpleDataVis(dataW)
+         .attr('type', 'stacked-bar-chart-2')
+         .render('#datavischart-2')
      });
      //  Cloudfoundry Runtime
      document.getElementById("cf_button").addEventListener("click", function () {
