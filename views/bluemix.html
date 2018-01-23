@@ -91,16 +91,19 @@
      document.getElementById("service_button").addEventListener("click", function () {
         document.getElementById("graph").innerHTML = "<figure class=\"guide-example theme_light bg_light-tint\"> " +
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\"> " +
-                                                      "Service Usage from all IBM Cloud Users. " +
-                                                      "<div id=\"datavischart\"></div> " +
+                                                      "Service Usage from all IBM Cloud Users. (Linear Scale)" +
+                                                      "<div id=\"datatotalvischart\"></div> " +
                                                       "<p style=\"font-size: 12px\"> Note: 1G = 1 Billion</p>" + 
                                                       "<p class=\"type_mark\" style=\"font-size: 30px\">" +
                                                       "Service Usage from all IBM Cloud Users. (Logarithmic Scale)</p>"
                                                       "<div id=\"datatotalvischart-2\"></div>" +
                                                       "</figure>";
-        SimpleDataVis(dataTotal)
+       SimpleDataVis(dataTotal)
+         .attr('type', 'stacked-bar-chart')
+         .render('#datatotalvischart')
+       SimpleDataVis(dataTotal)
          .attr('type', 'stacked-bar-chart-2')
-         .render('#datavischart')
+         .render('#datatotalvischart-2')
      });
      //  Cloudfoundry Runtime
      document.getElementById("cf_button").addEventListener("click", function () {
